@@ -1,0 +1,30 @@
+body {
+  font-family: cursive;
+}
+.nav_text {
+  font-family: 'Times New Roman', Times, serif;
+}
+.homeHead {
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+.content-right img {
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  max-width: 100%;
+  height: auto;
+}
+.content-left {
+  max-width: 600px;
+}
+.footer {
+  background: #0070f3;
+  color: white;
+  text-align: center;
+  padding: 15px;
+  font-size: 1rem;
+  font-weight: 600;
+}
+.logo {
+  height: 40px;
+  cursor: pointer;
+}
