@@ -9,6 +9,7 @@ import MarkUpload from "./Pages/MarkUpload";
 import MarkForm from "./Pages/MarkForm";
 import SignupPage from "./Pages/SignupPage";
 import LoginPage from "./Pages/LoginPage";
+import MarkSheet from "./Pages/MarkSheet";
 
 function App() {
   return (
@@ -19,6 +20,7 @@ function App() {
           <Route path="/attendance-form" element={<AttendanceForm />} />
           <Route path="/attendance-upload" element={<AttendanceUpload />} />
           <Route path="/mark-upload" element={<MarkUpload />} />
+          <Route path="/mark-sheet" element={<MarkSheet />} />
           <Route path="/mark-form" element={<MarkForm />} />
           <Route path="/signup" element={<SignupPage />} />
           <Route path="/login" element={<LoginPage />} />
