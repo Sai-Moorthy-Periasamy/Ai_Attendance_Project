@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Attendance Dashboard</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="heading">
+        <h1>Attendance Dashboard</h1>
+    </div>
+
+    <!-- Flash messages -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <div class="flash-messages">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <!-- Attendance Table -->
+    <div class="container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for row in data %}
+                <tr>
+                    {% for value in row %}
+                    <td>{{ value }}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Buttons Section -->
+    <div class="buttons">
+        <form action="/mark_attendance" method="post">
+            <button type="submit" class="btn">Mark Attendance</button>
+        </form>
+
+        <form action="/train" method="post">
+            <button type="submit" class="btn">Train / Update Faces</button>
+        </form>
+
+        <form action="/upload_data" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" required>
+            <button type="submit" class="btn">Upload .data file</button>
+        </form>
+
+        <a href="/download"><button class="btn">Download CSV</button></a>
+    </div>
+</body>
+</html>
