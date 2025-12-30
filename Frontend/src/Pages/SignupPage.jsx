@@ -34,18 +34,16 @@ const SignupPage = () => {
           Create Your Account
         </h3>
 
-        <div className="mb-4">
-          <label className="form-label fw-semibold">Profession</label>
-          <select
-            name="profession"
-            className="form-select"
-            value={form.profession}
+        <div className="mb-3">
+          <label className="form-label fw-semibold">Name</label>
+          <input
+            type="text"
+            name="name"
+            placeholder="Enter your full name"
+            className="form-control shadow-sm"
+            value={form.name}
             onChange={handleChange}
-          >
-            <option value="student">Student</option>
-            <option value="staff">Staff</option>
-            <option value="admin">Admin</option>
-          </select>
+          />
         </div>
 
         <div className="mb-3">
@@ -72,7 +70,7 @@ const SignupPage = () => {
           />
         </div>
 
-        <div className="mb-4">
+        <div className="mb-3">
           <label className="form-label fw-semibold">Password</label>
           <input
             type="password"
@@ -80,6 +78,56 @@ const SignupPage = () => {
             placeholder="Choose a strong password"
             className="form-control shadow-sm"
             value={form.password}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label fw-semibold">Profession</label>
+          <select
+            name="profession"
+            className="form-select"
+            value={form.profession}
+            onChange={handleChange}
+          >
+            <option value="student">Student</option>
+            <option value="staff">Staff</option>
+            <option value="admin">Admin</option>
+          </select>
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label fw-semibold">Year</label>
+          <input
+            type="number"
+            name="year"
+            placeholder="Enter your year (e.g., 4)"
+            className="form-control shadow-sm"
+            value={form.year}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="mb-3">
+          <label className="form-label fw-semibold">Department</label>
+          <input
+            type="text"
+            name="dept"
+            placeholder="Enter your department (e.g., cse)"
+            className="form-control shadow-sm"
+            value={form.dept}
+            onChange={handleChange}
+          />
+        </div>
+
+        <div className="mb-4">
+          <label className="form-label fw-semibold">Section</label>
+          <input
+            type="text"
+            name="section"
+            placeholder="Enter your section (e.g., B)"
+            className="form-control shadow-sm"
+            value={form.section}
             onChange={handleChange}
           />
         </div>

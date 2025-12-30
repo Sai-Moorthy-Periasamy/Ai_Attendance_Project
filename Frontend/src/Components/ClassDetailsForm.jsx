@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 
 const departments = [
-  "Computer Science and Engineering (CSE)",
-  "Information Technology (IT)",
-  "Artificial Intelligence and Data Science (AIDS)",
-  "Mechanical Engineering (Mech)",
-  "Electrical and Electronics Engineering (EEE)",
-  "Electronics and Communication Engineering (ECE)",
-  "Civil Engineering (Civil)",
-  "Mechatronics Engineering (Mechatronics)",
-  "Bio Technology (Biotech)",
+  "CSE",
+  "IT",
+  "AI & DS",
+  "MECH",
+  "EEE",
+  "ECE",
+  "Civil",
+  "Mechtronics",
+  "Biotech",
 ];
 
 const ClassDetailsForm = ({ onProceed }) => {
@@ -30,20 +30,29 @@ const ClassDetailsForm = ({ onProceed }) => {
     <form onSubmit={handleSubmit} className=" p-3 border rounded" style={{ maxWidth: 400,boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",fontFamily: "Lucida Sans, Lucida Sans Regular, Lucida Grande, Lucida Sans Unicode, Geneva, Verdana, sans-serif"}}>
       <br />
       <h5>Select Year</h5>
-      <br />
-      {["I", "II", "III", "IV"].map((y) => (
-        <div key={y}>
-          <input
-            type="radio"
-            id={y}
-            value={y}
-            checked={year === y}
-            onChange={(e) => setYear(e.target.value)}
-          />
-          <label htmlFor={y} className="ms-2">{y} Year</label>
-        </div>
-      ))}
-      <br />
+<br />
+{[1, 2, 3, 4].map((y) => (
+  <div key={y}>
+    <input
+      type="radio"
+      id={`year${y}`}
+      value={y}           // store integer to match MySQL
+      checked={year === String(y)}
+      onChange={(e) => setYear(e.target.value)}
+    />
+    <label htmlFor={`year${y}`} className="ms-2">
+      {y === 1
+        ? "1st Year"
+        : y === 2
+        ? "2nd Year"
+        : y === 3
+        ? "3rd Year"
+        : "4th Year"}
+    </label>
+  </div>
+))}
+<br />
+
       <h5 className="mt-3">Select Department</h5>
       <br />
       <select

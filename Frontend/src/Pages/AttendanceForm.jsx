@@ -18,9 +18,11 @@ const AttendanceForm = () => {
     return <div>Redirecting to login...</div>;
   }
 
+
   const handleProceed = (classDetails) => {
-    navigate("/attendance-upload", { state: classDetails });
-  };
+  navigate("/attendance-upload", { state: classDetails });
+};
+
 
   return (
     <div className="container d-flex flex-column align-items-center justify-content-center">

@@ -18,19 +18,42 @@ const db = mysql.createConnection({
 
 
 app.post("/signup", async (req, res) => {
-  const { rollno, email, password, profession } = req.body;
+  const { rollno, email, password, profession, name, year, dept, section } = req.body;
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const sql = "INSERT INTO users (rollno, email, password, profession) VALUES (?, ?, ?, ?)";
-    db.query(sql, [rollno, email, hashedPassword, profession], (err, result) => {
+    const sql = "INSERT INTO users (rollno, email, password, profession, name, year, dept, section) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    db.query(sql, [rollno, email, hashedPassword, profession, name, year, dept, section], (err, result) => {
       if (err) return res.status(500).json({ error: err });
       res.json({ message: "Signup success" });
     });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
+});
+
+app.get("/students", (req, res) => {
+  const { year, dept, section } = req.query;
+
+  const sql = `
+    SELECT rollno, name 
+    FROM users
+    WHERE year = ? AND dept = ? AND section = ? AND profession = 'student'
+  `;
+
+  db.query(sql, [year, dept, section], (err, results) => {
+    if (err) return res.status(500).json(err);
+
+    // Default all as ABSENT
+    const students = results.map((s) => ({
+      rollno: s.rollno,
+      name: s.name,
+      status: "Absent",
+    }));
+
+    res.json(students);
+  });
 });
 
 
