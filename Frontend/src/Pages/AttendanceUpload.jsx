@@ -1,75 +1,119 @@
-import React, { useState } from "react";
+import React from "react";
 
-const AttendanceUploadPage = () => {
-  const [images, setImages] = useState([]);
+const AttendanceDashboard = () => {
+  const [loading, setLoading] = React.useState(false);
+  const [message, setMessage] = React.useState("");
 
-  const handleImageChange = (e) => {
-    const files = Array.from(e.target.files);
-    setImages((prev) => [...prev, ...files]);
+  const handleMarkAttendance = async () => {
+  try {
+    const response = await fetch("http://localhost:5000/mark_attendance", {
+      method: "POST",
+    });
+
+    if (response.ok) {
+      alert("Camera started! Press Q to stop.");
+    } else {
+      alert("Failed to start attendance");
+    }
+  } catch (error) {
+    alert("Backend not running on port 5000");
+  }
+};
+
+
+  const handleTrainData = async () => {
+    setLoading(true);
+    setMessage("");
+    try {
+      const response = await fetch('http://localhost:5000/train', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setMessage(data.message);
+      } else {
+        setMessage(`Error: ${data.error}`);
+      }
+    } catch (error) {
+      setMessage(`Error: ${error.message}. Make sure the backend is running on port 5000.`);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleSubmit = () => {
-    // Placeholder → later AI processing
-    alert(`${images.length} image(s) submitted!`);
+  const handleAddUser = () => {
+    alert("Add New User clicked!");
+  };
+
+  const buttonStyle = (bgColor) => ({
+    flex: 1,
+    padding: "40px 20px",
+    margin: "10px",
+    border: "none",
+    borderRadius: 12,
+    color: "white",
+    fontSize: 18,
+    fontWeight: "bold",
+    cursor: "pointer",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    justifyContent: "center",
+    boxShadow: "0 4px 10px rgba(0,0,0,0.2)",
+    backgroundColor: bgColor,
+    transition: "transform 0.2s",
+  });
+
+  const iconStyle = {
+    fontSize: 36,
+    marginBottom: 10,
   };
 
   return (
-    <div style={{ maxWidth: 600, margin: "40px auto", fontFamily: "Arial, sans-serif" }}>
-         <h2
-    style={{
-      marginBottom: 20,
-      fontFamily: "Gill Sans, Gill Sans MT, Calibri, Trebuchet MS, sans-serif",
-      textAlign: "center",
-    }}
-  >
-    Upload Attendance Images
-  </h2>
-
-      <div style={{ padding: 20, border: "1px solid #ddd", borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}>
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
-          {images.map((img, index) => (
-            <img
-              key={index}
-              src={URL.createObjectURL(img)}
-              alt={`upload-${index}`}
-              style={{ width: 100, height: 100, objectFit: "cover", borderRadius: 8, border: "1px solid #ccc" }}
-            />
-          ))}
-
-          <label htmlFor="add-image" style={{ cursor: "pointer", border: "1px solid grey", width: 100, height: 100, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8 }}>
-            <input
-              id="add-image"
-              type="file"
-              accept="image/*"
-              multiple
-              style={{ display: "none" }}
-              onChange={handleImageChange}
-            />
-            <span style={{ fontSize: 48, color: "#2795f6", userSelect: "none" }}>+</span>
-          </label>
-        </div>
+    <div style={{ maxWidth: 600, margin: "50px auto", fontFamily: "Arial, sans-serif", textAlign: "center" }}>
+      <h2 style={{ marginBottom: 40 }}>AI Attendance Dashboard</h2>
+      <div style={{ display: "flex", flexDirection: "column" }}>
+        <button
+          style={buttonStyle("#4CAF50")}
+          onClick={handleMarkAttendance}
+          onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+          onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+        >
+          <span style={iconStyle}>📝</span>
+          Mark Attendance
+        </button>
 
         <button
-          onClick={handleSubmit}
-          style={{
-            marginTop: 24,
-            width: "100%",
-            padding: "12px 0",
-            backgroundColor: "#b41414ff",
-            color: "white",
-            fontWeight: "bold",
-            fontSize: 16,
-            border: "none",
-            borderRadius: 6,
-            cursor: "pointer",
-            fontFamily: "Times New Roman, Times, serif",
-          }}
+          style={buttonStyle("#2196F3")}
+          onClick={handleTrainData}
+          disabled={loading}
+          onMouseOver={(e) => !loading && (e.currentTarget.style.transform = "scale(1.05)")}
+          onMouseOut={(e) => !loading && (e.currentTarget.style.transform = "scale(1)")}
         >
-          Submit
+          <span style={iconStyle}>{loading ? "⏳" : "🤖"}</span>
+          {loading ? "Training..." : "Train Data"}
+        </button>
+
+        <button
+          style={buttonStyle("#FF5722")}
+          onClick={handleAddUser}
+          onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.05)"}
+          onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
+        >
+          <span style={iconStyle}>➕</span>
+          Add New User
         </button>
       </div>
+      {message && (
+        <div style={{ marginTop: 20, padding: 10, backgroundColor: "#f0f0f0", borderRadius: 5 }}>
+          {message}
+        </div>
+      )}
     </div>
   );
 };
 
-export default AttendanceUploadPage;
+export default AttendanceDashboard;

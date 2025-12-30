@@ -1,9 +1,11 @@
-from flask import Flask, render_template, send_file, request, redirect, flash
+from flask import Flask, render_template, send_file, request, redirect, flash, jsonify
 import csv, os, pickle, cv2, face_recognition, threading
 from datetime import datetime
 import numpy as np
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
 app.secret_key = "any_secret_key"
 
 TRAINING_PATH = './Training_images'
@@ -87,16 +89,18 @@ def index():
 
 @app.route('/train', methods=['POST'])
 def train():
-    load_encodings()
-    flash("Training / encoding completed successfully!")
-    return redirect('/')
+    try:
+        load_encodings()
+        return jsonify({"message": "Training / encoding completed successfully!"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/mark_attendance', methods=['POST'])
 def mark_attendance_route():
     thread = threading.Thread(target=run_camera)
     thread.start()
-    flash("Attendance marking started! Camera opened.")
-    return redirect('/')
+    return jsonify({"message": "Camera started for attendance"})
+
 
 @app.route('/download')
 def download():
