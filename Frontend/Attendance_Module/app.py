@@ -25,23 +25,34 @@ cursor = db.cursor(dictionary=True)
 TRAINING_PATH = './Training_images'
 encodeListKnown = []
 classNames = []
+rollno_to_name = {}
 
 # -------------------- Live Attendance -------------------- #
 current_session_present = set()  # Tracks scanned students in current session
 
 # -------------------- Helper Functions -------------------- #
 def load_encodings():
-    global encodeListKnown, classNames
+    global encodeListKnown, classNames, rollno_to_name
     images = []
     classNames = []
+    rollno_to_name = {}
 
     if not os.path.exists(TRAINING_PATH):
         os.makedirs(TRAINING_PATH)
 
     for cl in os.listdir(TRAINING_PATH):
+        rollno = os.path.splitext(cl)[0]
         curImg = cv2.imread(f'{TRAINING_PATH}/{cl}')
         images.append(curImg)
-        classNames.append(os.path.splitext(cl)[0])
+        classNames.append(rollno)
+        # Query DB for name
+        sql = "SELECT name FROM users WHERE rollno=%s"
+        cursor.execute(sql, (rollno,))
+        result = cursor.fetchone()
+        if result:
+            rollno_to_name[rollno] = result['name']
+        else:
+            rollno_to_name[rollno] = rollno  # Fallback to rollno if not found
 
     encodeList = []
     for img in images:
@@ -52,20 +63,20 @@ def load_encodings():
     encodeListKnown = encodeList
     return encodeListKnown, classNames
 
-def markAttendance(name):
+def markAttendance(rollno):
     global current_session_present
-    current_session_present.add(name)  # Update live set
+    current_session_present.add(rollno)  # Update live set with rollno
 
     # Also update CSV for record
     if not os.path.exists("Attendance.csv"):
         with open("Attendance.csv", 'w') as f:
-            f.write("Name,Time\n")
+            f.write("Rollno,Time\n")
     with open("Attendance.csv", 'r+') as f:
         lines = f.readlines()
-        names = [line.split(',')[0] for line in lines]
-        if name not in names:
+        rollnos = [line.split(',')[0] for line in lines]
+        if rollno not in rollnos:
             now = datetime.now().strftime("%H:%M:%S")
-            f.write(f"{name},{now}\n")
+            f.write(f"{rollno},{now}\n")
 
 # -------------------- Camera / Attendance -------------------- #
 def run_camera():
@@ -96,8 +107,9 @@ def run_camera():
                 continue
             matchIndex = np.argmin(faceDis)
             if matches[matchIndex]:
-                name = classNames[matchIndex]
-                markAttendance(name)
+                rollno = classNames[matchIndex]
+                name = rollno_to_name.get(rollno, rollno)
+                markAttendance(rollno)
                 y1, x2, y2, x1 = [v * 4 for v in faceLoc]
                 cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
                 cv2.rectangle(img, (x1, y2 - 35), (x2, y2), (0, 255, 0), cv2.FILLED)

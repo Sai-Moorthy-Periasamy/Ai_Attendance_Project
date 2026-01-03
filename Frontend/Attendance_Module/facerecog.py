@@ -37,11 +37,25 @@ def encode(fpath):
         pickle.dump(data,f,protocol=pickle.HIGHEST_PROTOCOL)
     return encodeListKnown
 
-def markAttendance(name):
+# Create rollno_to_name dict for display
+rollno_to_name = {}
+for rollno in classNames:
+    sql = "SELECT name FROM users WHERE rollno=%s"
+    cursor.execute(sql, (rollno,))
+    result = cursor.fetchone()
+    if result:
+        rollno_to_name[rollno] = result['name']
+    else:
+        rollno_to_name[rollno] = rollno  # Fallback to rollno if not found
+
+def markAttendance(rollno):
+    if not os.path.exists('./Attendance.csv'):
+        with open('./Attendance.csv','w') as f:
+            f.write('Rollno,Time\n')
     with open('./Attendance.csv','a') as f:
         now = datetime.now()
         dtString = now.strftime('%H:%M:%S')
-        f.write(f'{name},{dtString}\n')
+        f.write(f'{rollno},{dtString}\n')
     GPIO.output(buzz,GPIO.HIGH)
     sleep(0.5)
     GPIO.output(buzz,GPIO.LOW)
@@ -75,8 +89,9 @@ while True:
         faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
         matchIndex = np.argmin(faceDis)
         if matches[matchIndex]:
-            name = classNames[matchIndex].upper()
-            if name not in nameList:
-                nameList.append(name)
-                markAttendance(name)
+            rollno = classNames[matchIndex]
+            name = rollno_to_name.get(rollno, rollno).upper()
+            if rollno not in nameList:
+                nameList.append(rollno)
+                markAttendance(rollno)
                 print(name)

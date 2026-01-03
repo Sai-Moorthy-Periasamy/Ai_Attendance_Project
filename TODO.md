@@ -1,12 +1,24 @@
-# TODO: Fix Mark Attendance Navigation and Create Dedicated Page
+# TODO: Update Face Recognition System to Use Rollno Mapping
 
 ## Pending Tasks
-- [x] Create new CameraAttendance.jsx component that calls Flask API on mount and displays live attendance
-- [x] Add "/mark-attendance" route in App.jsx pointing to CameraAttendance component
-- [x] Update AttendanceData.jsx: Change "Mark Attendance" button to navigate to "/mark-attendance" instead of direct API call
-- [x] Update Flask app.py: Change route from '/mark_attendance' to '/mark-attendance' for consistency
-
-## Followup Steps
-- [ ] Test navigation flow: AttendanceData -> CameraAttendance
-- [ ] Verify camera opens and attendance updates in real-time
-- [ ] Ensure no CORS or backend issues
+- [ ] Update Frontend/Attendance_Module/app.py
+  - Modify load_encodings to create rollno_to_name dict by querying DB for each rollno
+  - Update classNames to be rollno (already is, since filenames are rollno)
+  - Modify markAttendance to write rollno instead of name to CSV
+  - Update run_camera to display name from dict instead of rollno
+  - Change CSV header to "Rollno,Time"
+- [ ] Update Frontend/Attendance_Module/facerecog.py
+  - Add MySQL DB connection
+  - Create rollno_to_name dict by querying DB
+  - Update markAttendance to write rollno to CSV
+  - Update display to show name
+  - Change CSV header to "Rollno,Time"
+- [ ] Update Frontend/Attendance_Module/main.py
+  - Add MySQL DB connection
+  - Create rollno_to_name dict by querying DB
+  - Update markAttendance to write rollno to CSV
+  - Update run_camera to display name
+  - Change CSV header to "Rollno,Time"
+- [ ] Update Frontend/src/Pages/AttendanceData.jsx
+  - Change presentNames.includes(s.name) to presentNames.includes(s.rollno)
+- [ ] Test the changes by running the app and checking recognition

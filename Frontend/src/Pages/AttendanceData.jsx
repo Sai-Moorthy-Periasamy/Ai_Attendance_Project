@@ -29,11 +29,11 @@ const AttendanceData = () => {
     const interval = setInterval(() => {
       fetch("http://localhost:5001/attendance-status")
         .then((res) => res.json())
-        .then((presentNames) => {
+        .then((presentRollNos) => {
           setStudents((prev) =>
             prev.map((s) => ({
               ...s,
-              status: presentNames.includes(s.name) ? "Present" : "Absent",
+              status: presentRollNos.includes(s.rollno) ? "Present" : "Absent",
             }))
           );
         })

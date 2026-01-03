@@ -8,15 +8,35 @@ import subprocess
 import sys
 subprocess.Popen(['start', 'cmd', '/k', sys.executable, 'main.py'], shell=True)
 
+# MySQL Setup
+import mysql.connector
+db = mysql.connector.connect(
+    host="localhost",
+    user="root",
+    password="Saimoorthy2004@gmail",
+    database="ai_attendance"
+)
+cursor = db.cursor(dictionary=True)
+
 # Load training images
 path = './Training_images'
 images = []
 classNames = []
+rollno_to_name = {}
 
 for cl in os.listdir(path):
+    rollno = os.path.splitext(cl)[0]
     curImg = cv2.imread(f'{path}/{cl}')
     images.append(curImg)
-    classNames.append(os.path.splitext(cl)[0])
+    classNames.append(rollno)
+    # Query DB for name
+    sql = "SELECT name FROM users WHERE rollno=%s"
+    cursor.execute(sql, (rollno,))
+    result = cursor.fetchone()
+    if result:
+        rollno_to_name[rollno] = result['name']
+    else:
+        rollno_to_name[rollno] = rollno  # Fallback to rollno if not found
 
 # Load or create encodings
 def findEncodings(images):
@@ -46,16 +66,16 @@ else:
     encodeListKnown = encode()
 
 # Attendance mark function
-def markAttendance(name):
+def markAttendance(rollno):
     if not os.path.exists("Attendance.csv"):
         with open("Attendance.csv", 'w') as f:
-            f.write("Name,Time\n")
+            f.write("Rollno,Time\n")
     with open("Attendance.csv", 'r+') as f:
         lines = f.readlines()
-        names = [line.split(',')[0] for line in lines]
-        if name not in names:
+        rollnos = [line.split(',')[0] for line in lines]
+        if rollno not in rollnos:
             now = datetime.now().strftime("%H:%M:%S")
-            f.write(f"{name},{now}\n")
+            f.write(f"{rollno},{now}\n")
 
 # Run camera
 def run_camera():
@@ -75,8 +95,9 @@ def run_camera():
             matchIndex = np.argmin(faceDis)
 
             if matches[matchIndex]:
-                name = classNames[matchIndex]
-                markAttendance(name)
+                rollno = classNames[matchIndex]
+                name = rollno_to_name.get(rollno, rollno)
+                markAttendance(rollno)
                 y1,x2,y2,x1 = [v*4 for v in faceLoc]
                 cv2.rectangle(img,(x1,y1),(x2,y2),(0,255,0),2)
                 cv2.rectangle(img,(x1,y2-35),(x2,y2),(0,255,0),cv2.FILLED)

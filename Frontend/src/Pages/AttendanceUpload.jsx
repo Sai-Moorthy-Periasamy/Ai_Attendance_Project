@@ -33,7 +33,7 @@ const AttendanceDashboard = () => {
     setMessage("");
 
     try {
-      const response = await fetch("http://localhost:5000/train", {
+      const response = await fetch("http://localhost:5001/train", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
