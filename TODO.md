@@ -1,24 +1,14 @@
-# TODO: Update Face Recognition System to Use Rollno Mapping
+# Rename Signup to Adduser Task
 
-## Pending Tasks
-- [ ] Update Frontend/Attendance_Module/app.py
-  - Modify load_encodings to create rollno_to_name dict by querying DB for each rollno
-  - Update classNames to be rollno (already is, since filenames are rollno)
-  - Modify markAttendance to write rollno instead of name to CSV
-  - Update run_camera to display name from dict instead of rollno
-  - Change CSV header to "Rollno,Time"
-- [ ] Update Frontend/Attendance_Module/facerecog.py
-  - Add MySQL DB connection
-  - Create rollno_to_name dict by querying DB
-  - Update markAttendance to write rollno to CSV
-  - Update display to show name
-  - Change CSV header to "Rollno,Time"
-- [ ] Update Frontend/Attendance_Module/main.py
-  - Add MySQL DB connection
-  - Create rollno_to_name dict by querying DB
-  - Update markAttendance to write rollno to CSV
-  - Update run_camera to display name
-  - Change CSV header to "Rollno,Time"
-- [ ] Update Frontend/src/Pages/AttendanceData.jsx
-  - Change presentNames.includes(s.name) to presentNames.includes(s.rollno)
-- [ ] Test the changes by running the app and checking recognition
+- [ ] Rename SignupPage.jsx to AdduserPage.jsx
+- [ ] Update SignupPage component to AdduserPage in SignupPage.jsx
+- [ ] Rename handleSignup function to handleAdduser in SignupPage.jsx
+- [ ] Change axios post endpoint from "/signup" to "/adduser" in SignupPage.jsx
+- [ ] Update alert messages from "Signup" to "Adduser" in SignupPage.jsx
+- [ ] Update button text from "Sign Up" to "Add User" in SignupPage.jsx
+- [ ] Update import and route in App.jsx from SignupPage to AdduserPage and "/signup" to "/adduser"
+- [ ] Change backend endpoint from "/signup" to "/adduser" in server.js
+- [ ] Update success message from "Signup success" to "Adduser success" in server.js
+- [ ] Update navigation link from "/signup" to "/adduser" in LoginPage.jsx
+- [ ] Update navigation link from "/signup" to "/adduser" in Navbar.jsx
+- [ ] Rename CSS class from "signup-btn" to "adduser-btn" in Navbar.jsx and Navbar.css

@@ -56,8 +56,8 @@ const Navbar = () => {
             <div className="auth-section d-flex align-items-center gap-3">
               
               {/* SIGN UP BUTTON */}
-              <Nav.Link as={NavLink} to="/signup" className="auth-btn signup-btn">
-                Sign
+              <Nav.Link as={NavLink} to="/adduser" className="auth-btn signup-btn">
+                Add
               </Nav.Link>
 
               {/* LOGIN BUTTON */}

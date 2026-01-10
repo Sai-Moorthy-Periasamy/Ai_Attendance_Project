@@ -23,8 +23,8 @@ db.connect((err) => {
   }
 });
 
-/* ================= SIGNUP ================= */
-app.post("/signup", async (req, res) => {
+/* ================= ADDUSER ================= */
+app.post("/adduser", async (req, res) => {
   const { rollno, email, password, profession, name, year, dept, section } = req.body;
 
   try {
@@ -46,7 +46,7 @@ app.post("/signup", async (req, res) => {
           }
           return res.status(500).json({ error: err.message });
         }
-        res.json({ message: "Signup success ✅" });
+        res.json({ message: "Adduser success ✅" });
       }
     );
   } catch (err) {

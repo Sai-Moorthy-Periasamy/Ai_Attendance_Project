@@ -11,7 +11,7 @@ import AttendanceData from "./Pages/AttendanceData";
 
 import MarkUpload from "./Pages/MarkUpload";
 import MarkForm from "./Pages/MarkForm";
-import SignupPage from "./Pages/SignupPage";
+import AdduserPage from "./Pages/AdduserPage";
 import LoginPage from "./Pages/LoginPage";
 import MarkSheet from "./Pages/MarkSheet";
 
@@ -31,7 +31,7 @@ function App() {
           <Route path="/mark-form" element={<MarkForm />} />
           <Route path="/mark-sheet" element={<MarkSheet />} />
 
-          <Route path="/signup" element={<SignupPage />} />
+          <Route path="/adduser" element={<AdduserPage/>} />
           <Route path="/login" element={<LoginPage />} />
         </Routes>
       </MainLayout>

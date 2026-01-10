@@ -84,7 +84,7 @@ const LoginPage = () => {
             Don't have an account?{" "}
             <button
               className="btn btn-link p-0"
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate("/adduser")}
               style={{ fontSize: "0.9rem" }}
             >
               Create one
