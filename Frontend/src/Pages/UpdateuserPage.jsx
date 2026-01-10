@@ -1,21 +1,36 @@
-import React, { useEffect, useState, useRef } from "react";
+// UpdateuserPage.jsx
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { AgGridReact } from "ag-grid-react";
 import "ag-grid-community/styles/ag-theme-alpine.css";
+import "ag-grid-enterprise";
+import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
+import { SelectEditorModule, LicenseManager } from "ag-grid-enterprise";
+import { FaSave, FaTrashAlt } from "react-icons/fa";
+
+// Set your AG Grid Enterprise license key
+LicenseManager.setLicenseKey("YOUR_LICENSE_KEY_HERE");
+ModuleRegistry.registerModules([AllCommunityModule, SelectEditorModule]);
 
 const UpdateuserPage = () => {
   const [rowData, setRowData] = useState([]);
   const gridRef = useRef();
 
+  // Fetch all users
   const fetchUsers = async () => {
-    const res = await axios.get("http://localhost:5000/getusers");
-    setRowData(res.data);
+    try {
+      const res = await axios.get("http://localhost:5000/getusers");
+      setRowData(res.data);
+    } catch (err) {
+      alert("Failed to fetch users: " + err.response?.data?.error);
+    }
   };
 
   useEffect(() => {
     fetchUsers();
   }, []);
 
+  // Save user after editing
   const handleSave = async (data) => {
     const { id, password, profession, year, dept, section } = data;
 
@@ -35,6 +50,7 @@ const UpdateuserPage = () => {
     }
   };
 
+  // Delete user
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this user?")) return;
 
@@ -47,6 +63,7 @@ const UpdateuserPage = () => {
     }
   };
 
+  // Column definitions
   const columns = [
     { headerName: "ID", field: "id", editable: false, width: 80 },
     { headerName: "Name", field: "name", editable: true },
@@ -55,41 +72,77 @@ const UpdateuserPage = () => {
       headerName: "Profession",
       field: "profession",
       editable: true,
-      filter:setColumnFilter,
+      filter: true,
       cellEditor: "agSelectCellEditor",
       cellEditorParams: { values: ["student", "staff", "admin"] },
     },
     { headerName: "Email", field: "email", editable: true },
-    { headerName: "Year", field: "year", editable: true },
-    { headerName: "Dept", field: "dept", editable: true },
-    { headerName: "Section", field: "section", editable: true },
+    { headerName: "Year", field: "year", editable: true, filter: true },
+    { headerName: "Dept", field: "dept", editable: true, filter: true },
+    { headerName: "Section", field: "section", editable: true, filter: true },
     {
       headerName: "Actions",
       field: "actions",
-      cellRendererFramework: (params) => (
-        <>
+      cellRenderer: (params) => (
+        <div style={{ display: "flex", gap: "5px" }}>
           <button
             onClick={() => handleSave(params.data)}
-            style={{ marginRight: "5px" }}
+            style={{
+              backgroundColor: "#28a745",
+              color: "#fff",
+              border: "none",
+              padding: "5px 10px",
+              borderRadius: "5px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              fontWeight: "bold",
+            }}
           >
-            Save
+            <FaSave /> Save
           </button>
-          <button onClick={() => handleDelete(params.data.id)}>Delete</button>
-        </>
+          <button
+            onClick={() => handleDelete(params.data.id)}
+            style={{
+              backgroundColor: "#dc3545",
+              color: "#fff",
+              border: "none",
+              padding: "5px 10px",
+              borderRadius: "5px",
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+              fontWeight: "bold",
+            }}
+          >
+            <FaTrashAlt /> Delete
+          </button>
+        </div>
       ),
     },
   ];
 
   return (
-    <div className="ag-theme-alpine" style={{ height: "600px", width: "100%", margin: "20px" }}>
-      <h2>Update Users</h2>
+    <div
+      className="ag-theme-alpine"
+      style={{ height: "600px", width: "100%", margin: "20px" }}
+    >
+      <h2 style={{ textAlign: "center", marginBottom: "15px" }}>Update Users</h2>
       <AgGridReact
         ref={gridRef}
         rowData={rowData}
         columnDefs={columns}
         pagination={true}
-        paginationPageSize={13}
-        defaultColDef={{ flex: 1, minWidth: 100, resizable: true }}
+        paginationPageSize={10}
+        defaultColDef={{
+          flex: 1,
+          minWidth: 120,
+          resizable: true,
+          sortable: true,
+          filter: true,
+        }}
       />
     </div>
   );
