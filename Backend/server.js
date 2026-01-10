@@ -54,6 +54,48 @@ app.post("/adduser", async (req, res) => {
   }
 });
 
+/* ================= GET ALL USERS ================= */
+app.get("/getusers", (req, res) => {
+  const sql = "SELECT * FROM users ORDER BY id ASC"; // all users
+
+  db.query(sql, (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
+
+/* ================= UPDATE USER ================= */
+app.put("/updateuser/:id", async (req, res) => {
+  const { id } = req.params;
+  const { name, rollno, email, password, profession, year, dept, section } = req.body;
+
+  try {
+    let hashedPassword = password;
+
+    // if password is not empty, hash it
+    if (password) {
+      hashedPassword = await bcrypt.hash(password, 10);
+    }
+
+    const sql = `
+      UPDATE users
+      SET name = ?, rollno = ?, email = ?, password = ?, profession = ?, year = ?, dept = ?, section = ?
+      WHERE id = ?
+    `;
+
+    db.query(
+      sql,
+      [name, rollno, email, hashedPassword, profession, year, dept, section, id],
+      (err, result) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.json({ message: "User updated successfully ✅" });
+      }
+    );
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
 /* ================= LOGIN ================= */
 app.post("/login", (req, res) => {
   const { email, password, profession } = req.body;

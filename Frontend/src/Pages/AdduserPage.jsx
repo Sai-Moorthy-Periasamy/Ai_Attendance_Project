@@ -1,25 +1,54 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Container, Row, Col, Card, Form, Button, Alert, Badge } from "react-bootstrap";
+import './AdduserPage.css';
 
 const AdduserPage = () => {
   const navigate = useNavigate();
-
   const [form, setForm] = useState({
     name: "",
     rollno: "",
     email: "",
     password: "",
-    profession: "staff", // ✅ default teacher
+    profession: "staff",
     year: "",
     dept: "",
     section: "",
   });
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+
+  const validateForm = () => {
+    const newErrors = {};
+    
+    if (!form.name.trim()) newErrors.name = "Name is required";
+    else if (form.name.length < 2) newErrors.name = "Name must be at least 2 characters";
+    
+    if (!form.rollno.trim()) newErrors.rollno = "Roll No is required";
+    
+    if (!form.email.trim()) newErrors.email = "Email is required";
+    else if (!/\S+@\S+\.\S+/.test(form.email)) newErrors.email = "Email is invalid";
+    
+    if (!form.password) newErrors.password = "Password is required";
+    else if (form.password.length < 6) newErrors.password = "Password must be at least 6 characters";
+
+    if (form.profession === "student") {
+      if (!form.year) newErrors.year = "Year is required for students";
+      if (!form.dept) newErrors.dept = "Department is required for students";
+      if (!form.section) newErrors.section = "Section is required for students";
+    }
+
+    return newErrors;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-
-    // if profession changes, reset student-only fields
+    setForm({ ...form, [name]: value });
+    setErrors({ ...errors, [name]: "" });
+    
+    // Reset student fields when profession changes
     if (name === "profession" && value !== "student") {
       setForm({
         ...form,
@@ -28,12 +57,19 @@ const AdduserPage = () => {
         dept: "",
         section: "",
       });
-    } else {
-      setForm({ ...form, [name]: value });
     }
   };
 
-  const handleAdduser = async () => {
+  const handleAdduser = async (e) => {
+    e.preventDefault();
+    const newErrors = validateForm();
+    
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setLoading(true);
     try {
       const payload = {
         name: form.name,
@@ -41,166 +77,260 @@ const AdduserPage = () => {
         email: form.email,
         password: form.password,
         profession: form.profession,
-
-        // ✅ only send these if student
         year: form.profession === "student" ? form.year : null,
         dept: form.profession === "student" ? form.dept : null,
         section: form.profession === "student" ? form.section : null,
       };
 
       const res = await axios.post("http://localhost:5000/adduser", payload);
-      alert(res.data.message);
+      setSuccess(true);
+      setTimeout(() => {
+        navigate("/login");
+      }, 2000);
     } catch (err) {
-      alert("Adduser failed: " + err.response?.data?.error);
+      setErrors({ 
+        submit: err.response?.data?.error || "Failed to create account. Please try again." 
+      });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-      <div className="card shadow-lg p-4 rounded-4" style={{ maxWidth: "420px", width: "100%" }}>
-        <h3 className="text-center fw-bold text-primary mb-4">
-          Create Account
-        </h3>
+    <div className="adduser-wrapper">
+      <Container className="py-5 min-vh-100 d-flex align-items-center">
+        <Row className="justify-content-center">
+          {/* ✅ PERFECT CENTER - FIXED */}
+          <Col md={12} lg={12} xl={12} xxl={12} className="mx-auto">
 
-        {/* NAME */}
+            <Card className="ultimate-auth-card border-0 shadow-lg">
+              <Card.Body className="p-5 p-lg-6">
+                
+                {/* HEADER */}
+                <div className="text-center mb-5">
+                  <div className="auth-header-icon mb-4"></div>
+                  <h2 className="auth-title mb-2">Create New Account</h2>
+                  <p className="auth-subtitle mb-0">
+                    Join KCET AI ERP - Complete your profile
+                  </p>
+                  <Badge bg="success" className="mt-3 profession-badge">
+                    {form.profession === "staff" ? "👨‍🏫 Staff" : 
+                     form.profession === "student" ? "🎓 Student" : "⚙️ Admin"}
+                  </Badge>
+                </div>
 
-        {/* PROFESSION */}
-        <div className="mb-3">
-          <label className="form-label fw-semibold">Profession</label>
-          <select
-            name="profession"
-            className="form-select"
-            value={form.profession}
-            onChange={handleChange}
-          >
-            <option value="staff">Staff (Teacher)</option>
-            <option value="student">Student</option>
-            <option value="admin">Admin</option>
-          </select>
-        </div>
+                <Form onSubmit={handleAdduser} noValidate>
+                  
+                  {/* PROFESSION SELECTOR */}
+                  <Form.Group className="mb-5">
+                    <Form.Label className="form-label">
+                      <span className="label-icon">👤</span>
+                      Account Type
+                    </Form.Label>
+                    <Form.Select
+                      name="profession"
+                      value={form.profession}
+                      onChange={handleChange}
+                      className="ultimate-select"
+                      isInvalid={!!errors.profession}
+                    >
+                      <option value="staff">👨‍🏫 Staff (Teacher)</option>
+                      <option value="student">🎓 Student</option>
+                      <option value="admin">⚙️ Admin</option>
+                    </Form.Select>
+                  </Form.Group>
 
-        <div className="mb-3">
-          <label className="form-label fw-semibold">Name</label>
-          <input
-            type="text"
-            name="name"
-            className="form-control"
-            value={form.name}
-            onChange={handleChange}
-          />
-        </div>
+                  {/* COMMON FIELDS */}
+                  <Row>
+                    <Col md={6}>
+                      <Form.Group className="mb-4">
+                        <Form.Label className="form-label">
+                          <span className="label-icon">📛</span>
+                          Full Name
+                        </Form.Label>
+                        <Form.Control
+                          name="name"
+                          type="text"
+                          value={form.name}
+                          onChange={handleChange}
+                          className="ultimate-input"
+                          isInvalid={!!errors.name}
+                          placeholder="Enter full name"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.name}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                    
+                    <Col md={6}>
+                      <Form.Group className="mb-4">
+                        <Form.Label className="form-label">
+                          <span className="label-icon">🆔</span>
+                          Roll No / ID
+                        </Form.Label>
+                        <Form.Control
+                          name="rollno"
+                          type="text"
+                          value={form.rollno}
+                          onChange={handleChange}
+                          className="ultimate-input"
+                          isInvalid={!!errors.rollno}
+                          placeholder="Enter roll number"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.rollno}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                  </Row>
 
-        {/* ROLL NO */}
-        <div className="mb-3">
-          <label className="form-label fw-semibold">Roll No</label>
-          <input
-            type="text"
-            name="rollno"
-            className="form-control"
-            value={form.rollno}
-            onChange={handleChange}
-          />
-        </div>
+                  <Row>
+                    <Col lg={6}>
+                      <Form.Group className="mb-4">
+                        <Form.Label className="form-label">
+                          <span className="label-icon">📧</span>
+                          Email
+                        </Form.Label>
+                        <Form.Control
+                          name="email"
+                          type="email"
+                          value={form.email}
+                          onChange={handleChange}
+                          className="ultimate-input"
+                          isInvalid={!!errors.email}
+                          placeholder="student@kcet.edu.in"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.email}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                    
+                    <Col lg={6}>
+                      <Form.Group className="mb-4">
+                        <Form.Label className="form-label">
+                          <span className="label-icon">🔒</span>
+                          Password
+                        </Form.Label>
+                        <Form.Control
+                          name="password"
+                          type="password"
+                          value={form.password}
+                          onChange={handleChange}
+                          className="ultimate-input"
+                          isInvalid={!!errors.password}
+                          placeholder="At least 6 characters"
+                        />
+                        <Form.Control.Feedback type="invalid">
+                          {errors.password}
+                        </Form.Control.Feedback>
+                      </Form.Group>
+                    </Col>
+                  </Row>
 
-        {/* EMAIL */}
-        <div className="mb-3">
-          <label className="form-label fw-semibold">Email</label>
-          <input
-            type="email"
-            name="email"
-            className="form-control"
-            value={form.email}
-            onChange={handleChange}
-          />
-        </div>
+                  {/* STUDENT FIELDS */}
+                  {form.profession === "student" && (
+                    <div className="student-fields">
+                      <Row>
+                        <Col md={4}>
+                          <Form.Group className="mb-4">
+                            <Form.Label className="form-label">
+                              <span className="label-icon">📚</span>
+                              Year
+                            </Form.Label>
+                            <Form.Select
+                              name="year"
+                              value={form.year}
+                              onChange={handleChange}
+                              className="ultimate-select"
+                              isInvalid={!!errors.year}
+                            >
+                              <option value="">Select Year</option>
+                              <option value="1">1st Year</option>
+                              <option value="2">2nd Year</option>
+                              <option value="3">3rd Year</option>
+                              <option value="4">4th Year</option>
+                            </Form.Select>
+                          </Form.Group>
+                        </Col>
+                        
+                        <Col md={4}>
+                          <Form.Group className="mb-4">
+                            <Form.Label className="form-label">
+                              <span className="label-icon">🏛️</span>
+                              Dept
+                            </Form.Label>
+                            <Form.Select
+                              name="dept"
+                              value={form.dept}
+                              onChange={handleChange}
+                              className="ultimate-select"
+                              isInvalid={!!errors.dept}
+                            >
+                              <option value="">Select Dept</option>
+                              <option value="CSE">CSE</option>
+                              <option value="IT">IT</option>
+                              <option value="AI & DS">AI & DS</option>
+                              <option value="ECE">ECE</option>
+                              <option value="EEE">EEE</option>
+                              <option value="MECH">MECH</option>
+                              <option value="CIVIL">CIVIL</option>
+                            </Form.Select>
+                          </Form.Group>
+                        </Col>
+                        
+                        <Col md={4}>
+                          <Form.Group className="mb-4">
+                            <Form.Label className="form-label">
+                              <span className="label-icon">📋</span>
+                              Section
+                            </Form.Label>
+                            <Form.Select
+                              name="section"
+                              value={form.section}
+                              onChange={handleChange}
+                              className="ultimate-select"
+                              isInvalid={!!errors.section}
+                            >
+                              <option value="">Select Section</option>
+                              <option value="A">A</option>
+                              <option value="B">B</option>
+                              <option value="C">C</option>
+                            </Form.Select>
+                          </Form.Group>
+                        </Col>
+                      </Row>
+                    </div>
+                  )}
 
-        {/* PASSWORD */}
-        <div className="mb-3">
-          <label className="form-label fw-semibold">Password</label>
-          <input
-            type="password"
-            name="password"
-            className="form-control"
-            value={form.password}
-            onChange={handleChange}
-          />
-        </div>
+                  {/* SUBMIT BUTTON */}
+                  <Button
+                    type="submit"
+                    className="w-100 ultimate-submit-btn mt-4"
+                    disabled={loading || success || Object.keys(errors).length > 0}
+                  >
+                    {loading && (
+                      <>
+                        <span className="spinner-border spinner-border-sm me-2"></span>
+                        Creating Account...
+                      </>
+                    )}
+                    {success ? "✅ Account Created!" : "🚀 Create Account"}
+                  </Button>
 
-        {/* 🔥 STUDENT ONLY FIELDS */}
-        {form.profession === "student" && (
-          <>
-            {/* YEAR */}
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Year</label>
-              <select
-                name="year"
-                className="form-select"
-                value={form.year}
-                onChange={handleChange}
-              >
-                <option value="">Select Year</option>
-                <option value="1">1st Year</option>
-                <option value="2">2nd Year</option>
-                <option value="3">3rd Year</option>
-                <option value="4">4th Year</option>
-              </select>
-            </div>
-        
-            {/* DEPARTMENT */}
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Department</label>
-              <select
-                name="dept"
-                className="form-select"
-                value={form.dept}
-                onChange={handleChange}
-              >
-                <option value="">Select Department</option>
-                <option value="CSE">CSE</option>
-                <option value="IT">IT</option>
-                <option value="AI & DS">AI & DS</option>
-                <option value="ECE">ECE</option>
-                <option value="EEE">EEE</option>
-                <option value="MECH">MECH</option>
-                <option value="CIVIL">CIVIL</option>
-              </select>
-            </div>
-        
-            {/* SECTION */}
-            <div className="mb-3">
-              <label className="form-label fw-semibold">Section</label>
-              <select
-                name="section"
-                className="form-select"
-                value={form.section}
-                onChange={handleChange}
-              >
-                <option value="">Select Section</option>
-                <option value="A">A</option>
-                <option value="B">B</option>
-                <option value="C">C</option>
-              </select>
-            </div>
-          </>
-        )}
+                  {errors.submit && (
+                    <Alert variant="danger" className="mt-4 ultimate-alert animate__animated animate__shakeX">
+                      {errors.submit}
+                    </Alert>
+                  )}
+                </Form>
 
-
-        <button
-          className="btn btn-primary w-100 fw-bold mt-2"
-          onClick={handleAdduser}
-        >
-          Add User
-        </button>
-
-        <div className="text-center mt-3">
-          <small>
-            Already have an account?{" "}
-            <button className="btn btn-link p-0" onClick={() => navigate("/login")}>
-              Login
-            </button>
-          </small>
-        </div>
-      </div>
+              </Card.Body>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
     </div>
   );
 };

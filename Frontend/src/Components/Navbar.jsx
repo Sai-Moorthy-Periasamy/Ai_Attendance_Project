@@ -55,11 +55,6 @@ const Navbar = () => {
             {/* AUTH SECTION */}
             <div className="auth-section d-flex align-items-center gap-3">
               
-              {/* SIGN UP BUTTON */}
-              <Nav.Link as={NavLink} to="/adduser" className="auth-btn signup-btn">
-                Add
-              </Nav.Link>
-
               {/* LOGIN BUTTON */}
               <Nav.Link as={NavLink} to="/login" className="auth-btn login-btn">
                 Login

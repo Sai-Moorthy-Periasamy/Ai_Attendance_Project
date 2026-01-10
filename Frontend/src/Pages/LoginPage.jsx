@@ -79,19 +79,7 @@ const LoginPage = () => {
           >
             Login
           </button>
-          <div className="text-center mt-3">
-          <small>
-            Don't have an account?{" "}
-            <button
-              className="btn btn-link p-0"
-              onClick={() => navigate("/adduser")}
-              style={{ fontSize: "0.9rem" }}
-            >
-              Create one
-            </button>
-          </small>
-        </div>
-        </div>
+            </div>
       </div>
     </div>
   );

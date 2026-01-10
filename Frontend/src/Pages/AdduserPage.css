@@ -1,0 +1,170 @@
+.adduser-wrapper {
+  background: linear-gradient(135deg, #1e3a8a 0%, #1e40af 30%, #0ea5e9 70%);
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+}
+
+.adduser-wrapper::before {
+  content: '';
+  position: absolute;
+  top: 10%;
+  left: 10%;
+  width: 400px;
+  height: 400px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 50%;
+  filter: blur(80px);
+  animation: float 8s ease-in-out infinite;
+}
+
+.ultimate-auth-card {
+  background: rgba(255, 255, 255, 0.97) !important;
+  backdrop-filter: blur(30px);
+  border-radius: 32px !important;
+  box-shadow: 0 35px 90px rgba(30, 58, 138, 0.3) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ultimate-auth-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 50px 120px rgba(30, 58, 138, 0.4);
+}
+
+.auth-header-icon {
+  width: 90px;
+  height: 90px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  border-radius: 50%;
+  margin: 0 auto;
+  position: relative;
+  box-shadow: 0 20px 45px rgba(16, 185, 129, 0.4);
+  animation: pulse 2s infinite;
+}
+
+.auth-header-icon::after {
+  content: '👤';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 36px;
+}
+
+.auth-title {
+  font-size: clamp(28px, 4vw, 38px) !important;
+  font-weight: 900 !important;
+  background: linear-gradient(135deg, #1e3a8a, #10b981);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.auth-subtitle {
+  color: #6b7280 !important;
+  font-size: 16px !important;
+  font-weight: 400 !important;
+}
+
+.profession-badge {
+  font-size: 14px !important;
+  padding: 8px 16px !important;
+  animation: badgePulse 2s infinite;
+}
+
+.form-label {
+  font-weight: 700 !important;
+  color: #1e3a8a !important;
+  font-size: 16px !important;
+  margin-bottom: 12px !important;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.label-icon {
+  font-size: 18px !important;
+}
+
+.ultimate-input, .ultimate-select {
+  border-radius: 16px !important;
+  border: 2px solid rgba(30, 58, 138, 0.15) !important;
+  padding: 16px 20px !important;
+  font-weight: 500 !important;
+  font-size: 16px !important;
+  height: 56px !important;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  background: rgba(255, 255, 255, 0.9) !important;
+}
+
+.ultimate-input:focus, .ultimate-select:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.2), 0 15px 35px rgba(16, 185, 129, 0.15) !important;
+  transform: translateY(-2px) !important;
+}
+
+.student-fields {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.05) 0%, rgba(30, 58, 138, 0.05) 100%);
+  border-radius: 24px;
+  padding: 24px;
+  border: 2px solid rgba(16, 185, 129, 0.15);
+  margin: 24px 0;
+}
+
+.ultimate-submit-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border: none !important;
+  border-radius: 50px !important;
+  padding: 20px !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  height: 70px !important;
+  box-shadow: 0 25px 50px rgba(16, 185, 129, 0.4) !important;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.ultimate-submit-btn:hover:not(:disabled) {
+  transform: translateY(-6px) !important;
+  box-shadow: 0 35px 70px rgba(16, 185, 129, 0.6) !important;
+}
+
+.ultimate-submit-btn:disabled {
+  opacity: 0.8;
+  cursor: not-allowed;
+}
+
+.ultimate-alert {
+  border-radius: 20px !important;
+  border: none !important;
+  font-weight: 600 !important;
+  animation: alertPop 0.5s ease-out !important;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.06); }
+}
+
+@keyframes badgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes alertPop {
+  0% { transform: scale(0.95); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .ultimate-auth-card {
+    margin: 20px !important;
+    border-radius: 24px !important;
+  }
+}
