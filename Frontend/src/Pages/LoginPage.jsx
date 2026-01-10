@@ -16,7 +16,7 @@ const LoginPage = () => {
       const res = await axios.post("http://localhost:5000/login", form);
       alert(res.data.message);
       localStorage.setItem('user', JSON.stringify(res.data.user));
-      const from = location.state?.from || '/attendance-form';
+      const from = location.state?.from || '/';
       navigate(from);
     } catch (err) {
       alert("Login failed: " + err.response?.data?.error);

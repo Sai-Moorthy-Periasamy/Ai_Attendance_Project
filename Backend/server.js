@@ -7,12 +7,12 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-/* ✅ DATABASE CONNECTION */
+/* ================= DATABASE CONNECTION ================= */
 const db = mysql.createConnection({
   host: "localhost",
   user: "root",
   password: "Saimoorthy2004@gmail",
-  database: "kcet",   // ✅ CHANGED
+  database: "kcet",
 });
 
 db.connect((err) => {
@@ -23,7 +23,7 @@ db.connect((err) => {
   }
 });
 
-/* ================= ADDUSER ================= */
+/* ================= ADD USER ================= */
 app.post("/adduser", async (req, res) => {
   const { rollno, email, password, profession, name, year, dept, section } = req.body;
 
@@ -56,7 +56,7 @@ app.post("/adduser", async (req, res) => {
 
 /* ================= GET ALL USERS ================= */
 app.get("/getusers", (req, res) => {
-  const sql = "SELECT * FROM users ORDER BY id ASC"; // all users
+  const sql = "SELECT * FROM users ORDER BY id ASC";
 
   db.query(sql, (err, results) => {
     if (err) return res.status(500).json({ error: err.message });
@@ -64,36 +64,48 @@ app.get("/getusers", (req, res) => {
   });
 });
 
-/* ================= UPDATE USER ================= */
-app.put("/updateuser/:id", async (req, res) => {
+/* ================= UPDATE USER (NO PASSWORD CHANGE) ================= */
+app.put("/updateuser/:id", (req, res) => {
   const { id } = req.params;
-  const { name, rollno, email, password, profession, year, dept, section } = req.body;
+  const { name, rollno, email, profession, year, dept, section } = req.body;
 
-  try {
-    let hashedPassword = password;
+  const sql = `
+    UPDATE users
+    SET name = ?, rollno = ?, email = ?, profession = ?, year = ?, dept = ?, section = ?
+    WHERE id = ?
+  `;
 
-    // if password is not empty, hash it
-    if (password) {
-      hashedPassword = await bcrypt.hash(password, 10);
+  db.query(
+    sql,
+    [
+      name,
+      rollno,
+      email,
+      profession,
+      profession === "student" ? year : null,
+      profession === "student" ? dept : null,
+      profession === "student" ? section : null,
+      id,
+    ],
+    (err, result) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ message: "User updated successfully ✅" });
     }
+  );
+});
 
-    const sql = `
-      UPDATE users
-      SET name = ?, rollno = ?, email = ?, password = ?, profession = ?, year = ?, dept = ?, section = ?
-      WHERE id = ?
-    `;
+/* ================= DELETE USER ================= */
+app.delete("/deleteuser/:id", (req, res) => {
+  const { id } = req.params;
 
-    db.query(
-      sql,
-      [name, rollno, email, hashedPassword, profession, year, dept, section, id],
-      (err, result) => {
-        if (err) return res.status(500).json({ error: err.message });
-        res.json({ message: "User updated successfully ✅" });
-      }
-    );
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
+  const sql = "DELETE FROM users WHERE id = ?";
+  db.query(sql, [id], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    if (result.affectedRows === 0)
+      return res.status(404).json({ error: "User not found" });
+
+    res.json({ message: "User deleted successfully ✅" });
+  });
 });
 
 /* ================= LOGIN ================= */
@@ -112,7 +124,6 @@ app.post("/login", (req, res) => {
     if (!match)
       return res.status(401).json({ error: "Invalid credentials ❌" });
 
-    // ❌ Don’t send password to frontend
     delete user.password;
 
     res.json({
@@ -138,7 +149,7 @@ app.get("/students", (req, res) => {
     const students = results.map((s) => ({
       rollno: s.rollno,
       name: s.name,
-      status: "Absent", // default
+      status: "Absent",
     }));
 
     res.json(students);

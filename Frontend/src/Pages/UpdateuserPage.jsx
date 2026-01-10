@@ -1,4 +1,3 @@
-// UpdateuserPage.jsx
 import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { AgGridReact } from "ag-grid-react";
@@ -20,7 +19,9 @@ const UpdateuserPage = () => {
   const fetchUsers = async () => {
     try {
       const res = await axios.get("http://localhost:5000/getusers");
-      setRowData(res.data);
+      // Do not send password to frontend
+      const sanitized = res.data.map(u => ({ ...u }));
+      setRowData(sanitized);
     } catch (err) {
       alert("Failed to fetch users: " + err.response?.data?.error);
     }
@@ -32,17 +33,12 @@ const UpdateuserPage = () => {
 
   // Save user after editing
   const handleSave = async (data) => {
-    const { id, password, profession, year, dept, section } = data;
-
-    const payload = {
-      ...data,
-      year: profession === "student" ? year : null,
-      dept: profession === "student" ? dept : null,
-      section: profession === "student" ? section : null,
-    };
+    // Remove password from payload
+    const payload = { ...data };
+    delete payload.password;
 
     try {
-      await axios.put(`http://localhost:5000/updateuser/${id}`, payload);
+      await axios.put(`http://localhost:5000/updateuser/${data.id}`, payload);
       alert("User updated ✅");
       fetchUsers();
     } catch (err) {
@@ -63,7 +59,6 @@ const UpdateuserPage = () => {
     }
   };
 
-  // Column definitions
   const columns = [
     { headerName: "ID", field: "id", editable: false, width: 80 },
     { headerName: "Name", field: "name", editable: true },

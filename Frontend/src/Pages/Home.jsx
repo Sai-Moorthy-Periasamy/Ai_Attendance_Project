@@ -17,26 +17,30 @@ const Home = () => {
 
       <Container className="hero-container">
         <Row className="hero-row align-items-center min-vh-100">
-          
+
           {/* LEFT CONTENT */}
           <Col lg={6} className="hero-content">
             <h1 className="hero-title">
-              Welcome {role === "admin" ? "Admin" : "Faculty"} 👋 <br/>
+              Welcome {!user ? "" : role === "admin" ? "Admin" : role === "student" ? "Student" : "Faculty"} 👋 <br/>
               <span className="hero-highlight">
                 Smart Attendance & Mark Management
               </span>
             </h1>
 
             <p className="hero-subtitle">
-              {role === "admin"
+              {!user
+                ? "KCET ERP is evolving with AI to make campus management smarter and easier."
+                : role === "admin"
                 ? "Manage users, roles and system configuration."
+                : role === "student"
+                ? "Track your attendance and view your marks instantly students."
                 : "Mark attendance and upload student marks with ease."}
             </p>
 
             {/* 🔥 ROLE BASED BUTTONS */}
             <div className="cta-buttons">
 
-              {role === "admin" ? (
+              {!user ? null : role === "admin" ? (
                 <>
                   <Button
                     size="lg"
@@ -53,6 +57,25 @@ const Home = () => {
                     onClick={() => navigate('/updateuser')}
                   >
                     ✏️ Update Users
+                  </Button>
+                </>
+              ) : role === "student" ? (
+                <>
+                  <Button
+                    size="lg"
+                    className="cta-primary-btn me-3 mb-3 mb-lg-0"
+                    onClick={() => navigate('/attendance-data')}
+                  >
+                    📊 View Attendance
+                  </Button>
+
+                  <Button
+                    size="lg"
+                    className="cta-secondary-btn"
+                    variant="outline-light"
+                    onClick={() => navigate('/mark-sheet')}
+                  >
+                    📈 View Marks
                   </Button>
                 </>
               ) : (
