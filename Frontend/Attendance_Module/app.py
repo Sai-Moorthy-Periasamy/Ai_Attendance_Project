@@ -1,6 +1,5 @@
 from flask import Flask, request, jsonify
 from flask_cors import CORS
-import threading
 import os
 import cv2
 import face_recognition
@@ -9,27 +8,29 @@ from datetime import datetime
 import mysql.connector
 
 app = Flask(__name__)
-CORS(app)
 app.secret_key = "any_secret_key"
+
+# ✅ CORS FIX (IMPORTANT)
+CORS(
+    app,
+    resources={r"/*": {"origins": "http://localhost:5173"}},
+    supports_credentials=True
+)
 
 # -------------------- MySQL Setup -------------------- #
 db = mysql.connector.connect(
     host="localhost",
     user="root",
     password="Saimoorthy2004@gmail",
-    database="kcet"   # ✅ CHANGED
+    database="kcet"
 )
-
 cursor = db.cursor(dictionary=True)
 
 # -------------------- Face Recognition Setup -------------------- #
-TRAINING_PATH = './Training_images'
+TRAINING_PATH = "./Training_images"
 encodeListKnown = []
 classNames = []
 rollno_to_name = {}
-
-# -------------------- Live Attendance -------------------- #
-current_session_present = set()
 
 # -------------------- Helper Functions -------------------- #
 def load_encodings():
@@ -56,7 +57,6 @@ def load_encodings():
         sql = "SELECT name FROM users WHERE rollno=%s"
         cursor.execute(sql, (rollno,))
         result = cursor.fetchone()
-
         rollno_to_name[rollno] = result["name"] if result else rollno
 
     encodeList = []
@@ -68,73 +68,6 @@ def load_encodings():
 
     encodeListKnown = encodeList
     return encodeListKnown, classNames
-
-
-def markAttendance(rollno):
-    global current_session_present
-    current_session_present.add(rollno)
-
-    if not os.path.exists("Attendance.csv"):
-        with open("Attendance.csv", 'w') as f:
-            f.write("Rollno,Time\n")
-
-    with open("Attendance.csv", 'r+') as f:
-        lines = f.readlines()
-        rollnos = [line.split(',')[0] for line in lines]
-
-        if rollno not in rollnos:
-            time_now = datetime.now().strftime("%H:%M:%S")
-            f.write(f"{rollno},{time_now}\n")
-
-# -------------------- Camera Logic -------------------- #
-def run_camera():
-    if not encodeListKnown:
-        load_encodings()
-
-    cap = cv2.VideoCapture(0)
-    if not cap.isOpened():
-        print("❌ Camera not accessible")
-        return
-
-    while True:
-        success, img = cap.read()
-        if not success:
-            continue
-
-        imgS = cv2.resize(img, (0, 0), fx=0.25, fy=0.25)
-        imgS = cv2.cvtColor(imgS, cv2.COLOR_BGR2RGB)
-
-        faces = face_recognition.face_locations(imgS)
-        encodes = face_recognition.face_encodings(imgS, faces)
-
-        for encodeFace, faceLoc in zip(encodes, faces):
-            matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
-            faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
-
-            if len(faceDis) == 0:
-                continue
-
-            matchIndex = np.argmin(faceDis)
-
-            if matches[matchIndex]:
-                rollno = classNames[matchIndex]
-                name = rollno_to_name.get(rollno, rollno)
-
-                markAttendance(rollno)
-
-                y1, x2, y2, x1 = [v * 4 for v in faceLoc]
-                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 2)
-                cv2.rectangle(img, (x1, y2 - 35), (x2, y2),
-                              (0, 255, 0), cv2.FILLED)
-                cv2.putText(img, name, (x1 + 6, y2 - 6),
-                            cv2.FONT_HERSHEY_COMPLEX, 1, (255, 255, 255), 2)
-
-        cv2.imshow("Camera - Press Q to Exit", img)
-        if cv2.waitKey(1) & 0xFF == ord('q'):
-            break
-
-    cap.release()
-    cv2.destroyAllWindows()
 
 # -------------------- Flask Routes -------------------- #
 @app.route("/students", methods=["GET"])
@@ -160,23 +93,63 @@ def get_students():
     cursor.execute(sql, (year, dept, section))
     return jsonify(cursor.fetchall())
 
-
-@app.route("/attendance-status", methods=["GET"])
-def attendance_status():
-    return jsonify(list(current_session_present))
-
-
 @app.route("/train", methods=["POST"])
 def train():
     load_encodings()
     return jsonify({"message": "Training completed successfully ✅"})
 
+# -------------------- IMAGE UPLOAD / FACE DETECTION -------------------- #
+@app.route("/detect-faces", methods=["POST"])
+def detect_faces():
+    if "image" not in request.files:
+        return jsonify({"error": "No image uploaded"}), 400
 
-@app.route("/mark_attendance", methods=["POST"])
-def mark_attendance():
-    threading.Thread(target=run_camera).start()
-    return jsonify({"message": "Camera started for attendance 📸"})
+    file = request.files["image"]
+    img_bytes = np.frombuffer(file.read(), np.uint8)
+    img = cv2.imdecode(img_bytes, cv2.IMREAD_COLOR)
 
+    if img is None:
+        return jsonify({"error": "Invalid image"}), 400
 
+    rgb_img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+    face_locations = face_recognition.face_locations(rgb_img)
+    face_encodings = face_recognition.face_encodings(rgb_img, face_locations)
+
+    detected_faces = []
+
+    for encodeFace, faceLoc in zip(face_encodings, face_locations):
+        matches = face_recognition.compare_faces(encodeListKnown, encodeFace)
+        faceDis = face_recognition.face_distance(encodeListKnown, encodeFace)
+
+        rollno = "Unknown"
+        name = "Unknown"
+
+        if len(faceDis) > 0:
+            matchIndex = np.argmin(faceDis)
+            if matches[matchIndex]:
+                rollno = classNames[matchIndex]
+                name = rollno_to_name.get(rollno, rollno)
+
+        top, right, bottom, left = faceLoc
+
+        detected_faces.append({
+            "rollno": rollno,
+            "name": name,
+            "box": {
+                "top": top,
+                "right": right,
+                "bottom": bottom,
+                "left": left
+            },
+            "color": "pink"
+        })
+
+    return jsonify({
+        "faces": detected_faces,
+        "total_faces": len(detected_faces)
+    })
+
+# -------------------- RUN -------------------- #
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True, use_reloader=False)

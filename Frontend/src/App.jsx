@@ -2,6 +2,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainLayout from "./Components/MainLayout";
+import ScrollToTop from "./Components/ScrollToTop";
 
 import Home from "./Pages/Home";
 import AttendanceForm from "./Pages/AttendanceForm";
@@ -17,6 +18,7 @@ import MarkSheet from "./Pages/MarkSheet";
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <MainLayout>
         <Routes>
           <Route path="/" element={<Home />} />

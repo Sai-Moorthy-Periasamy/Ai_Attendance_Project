@@ -32,7 +32,7 @@ const MarkForm = () => {
             "Lucida Sans, Lucida Sans Regular, Lucida Grande, Lucida Sans Unicode, Geneva, Verdana, sans-serif",
         }}
       >Mark Uploading Form</h1>
-      <div className="w-100" style={{ maxWidth: "500px" }}>
+      <div className="w-100" style={{ maxWidth: "800px" }}>
         <ClassDetailsForm onProceed={handleProceed} />
       </div>
     </div>

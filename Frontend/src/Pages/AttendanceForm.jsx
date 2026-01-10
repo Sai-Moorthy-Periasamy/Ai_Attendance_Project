@@ -26,18 +26,7 @@ const AttendanceForm = () => {
 
   return (
     <div className="container d-flex flex-column align-items-center justify-content-center">
-      <br />
-      <h1
-        className="text-center mb-4"
-        style={{
-          fontSize: "23px",
-          fontFamily:
-            "Lucida Sans, Lucida Sans Regular, Lucida Grande, Lucida Sans Unicode, Geneva, Verdana, sans-serif",
-        }}
-      >
-        Attendance Uploading Form
-      </h1>
-      <div className="w-100" style={{ maxWidth: "500px" }}>
+      <div className="w-100">
         <ClassDetailsForm onProceed={handleProceed} />
         <br />
       </div>

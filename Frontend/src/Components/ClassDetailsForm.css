@@ -1,0 +1,77 @@
+.ultimate-form-card {
+  background: rgba(255, 255, 255, 0.95) !important;
+  backdrop-filter: blur(25px);
+  border-radius: 28px !important;
+  box-shadow: 0 25px 70px rgba(30, 58, 138, 0.25) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+.ultimate-form-card:hover {
+  transform: translateY(-8px) !important;
+  box-shadow: 0 35px 90px rgba(30, 58, 138, 0.35) !important;
+}
+.form-title {
+  font-size: clamp(28px, 4vw, 36px) !important;
+  font-weight: 800 !important;
+  background: linear-gradient(135deg, #1e3a8a, #10b981) !important;
+  -webkit-background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+  background-clip: text !important;
+  letter-spacing: -0.02em !important;
+}
+
+.form-subtitle {
+  color: #6b7280 !important;
+  font-weight: 400 !important;
+  font-size: 16px !important;
+}
+
+.section-label {
+  font-weight: 700 !important;
+  color: #1e3a8a !important;
+  font-size: 18px !important;
+  margin-bottom: 20px !important;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.label-icon {
+  font-size: 20px !important;
+}
+
+.year-options, .section-options {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.ultimate-select:focus {
+  border-color: #10b981 !important;
+  box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25), 0 12px 30px rgba(16, 185, 129, 0.2) !important;
+}
+
+.ultimate-submit-btn {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%) !important;
+  border: none !important;
+  border-radius: 50px !important;
+  padding: 18px !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  height: 65px !important;
+  box-shadow: 0 20px 45px rgba(16, 185, 129, 0.4) !important;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) !important;
+}
+
+.ultimate-submit-btn:hover:not(:disabled) {
+  transform: translateY(-4px) !important;
+  box-shadow: 0 30px 60px rgba(16, 185, 129, 0.6) !important;
+}
+
+.ultimate-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+
