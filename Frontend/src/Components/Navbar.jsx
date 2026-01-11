@@ -55,10 +55,16 @@ const Navbar = () => {
             {/* AUTH SECTION */}
             <div className="auth-section d-flex align-items-center gap-3">
               
-              {/* LOGIN BUTTON */}
+            {/* CONDITIONAL LOGIN/LOGOUT BUTTON */}
+            {user ? (
+              <Nav.Link onClick={handleLogout} className="auth-btn logout-btn">
+                Logout
+              </Nav.Link>
+            ) : (
               <Nav.Link as={NavLink} to="/login" className="auth-btn login-btn">
                 Login
               </Nav.Link>
+            )}
 
               {/* USER PROFILE */}
               <Dropdown>

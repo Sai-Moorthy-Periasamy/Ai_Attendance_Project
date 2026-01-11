@@ -33,7 +33,7 @@ const Home = () => {
                 : role === "admin"
                 ? "Manage users, roles and system configuration."
                 : role === "student"
-                ? "Track your attendance and view your marks instantly students."
+                ? "Track your attendance and view your marks instantly."
                 : "Mark attendance and upload student marks with ease."}
             </p>
 
@@ -64,7 +64,7 @@ const Home = () => {
                   <Button
                     size="lg"
                     className="cta-primary-btn me-3 mb-3 mb-lg-0"
-                    onClick={() => navigate('/attendance-data')}
+                    onClick={() => navigate('/student-view-attendance')}
                   >
                     📊 View Attendance
                   </Button>

@@ -183,7 +183,7 @@ app.post("/attendance", (req, res) => {
   // Prepare values for bulk insert
   const values = records.map(r => [
     r.rollno, r.name, r.year, r.dept, r.section,
-    r.period, r.status, r.staff_rollno, r.staff_name, currentDate
+    r.period, r.status, r.staff_rollno, r.staff_name, r.date || currentDate
   ]);
 
   const sql = `
@@ -205,6 +205,24 @@ app.post("/attendance", (req, res) => {
     res.json({ message: "Attendance saved successfully ✅", inserted: result.affectedRows });
   });
 });
+
+// GET STUDENT ATTENDANCE FOR DATE
+app.get("/attendance-data-student", (req, res) => {
+  const { rollno, date } = req.query;
+
+  const sql = `
+    SELECT period, status
+    FROM attendance
+    WHERE rollno = ? AND date = ?
+    ORDER BY period ASC
+  `;
+
+  db.query(sql, [rollno, date], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json(results);
+  });
+});
+
 
 app.listen(5000, () => console.log("Server running on http://localhost:5000 🚀"));
 

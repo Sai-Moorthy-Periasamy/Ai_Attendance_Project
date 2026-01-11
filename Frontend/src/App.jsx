@@ -8,14 +8,14 @@ import Home from "./Pages/Home";
 import AttendanceForm from "./Pages/AttendanceForm";
 import AttendanceUpload from "./Pages/AttendanceUpload";
 import AttendanceData from "./Pages/AttendanceData";
-
+import ViewAttendance from "./Pages/ViewAttendance";
 import MarkUpload from "./Pages/MarkUpload";
 import MarkForm from "./Pages/MarkForm";
 import AdduserPage from "./Pages/AdduserPage";
 import UpdateuserPage from "./Pages/UpdateuserPage";
 import LoginPage from "./Pages/LoginPage";
 import MarkSheet from "./Pages/MarkSheet";
-
+import StudentViewAttendance from "./Pages/StudentViewAttendance";
 function App() {
   return (
     <Router>
@@ -27,7 +27,8 @@ function App() {
           <Route path="/attendance-form" element={<AttendanceForm />} />
           <Route path="/attendance-upload" element={<AttendanceUpload />} />
           <Route path="/attendance-data" element={<AttendanceData />} />
-
+          <Route path="/view-attendance" element={<ViewAttendance />} />
+          <Route path="/student-view-attendance" element={<StudentViewAttendance />} />
           <Route path="/mark-upload" element={<MarkUpload />} />
           <Route path="/mark-form" element={<MarkForm />} />
           <Route path="/mark-sheet" element={<MarkSheet />} />

@@ -20,8 +20,7 @@ const LoginPage = () => {
       localStorage.setItem('rollno', res.data.user.rollno);
       localStorage.setItem('name', res.data.user.name);
       // Show alert with rollno and staff name
-      alert(`Logged in as: Roll No - ${res.data.user.rollno}, Name - ${res.data.user.name}`);
-      const from = location.state?.from || '/';
+     const from = location.state?.from || '/';
       navigate(from);
     } catch (err) {
       alert("Login failed: " + err.response?.data?.error);

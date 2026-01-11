@@ -203,9 +203,9 @@ const AttendanceUpload = () => {
             <p>Improve recognition accuracy</p>
           </div>
 
-          {/* ADD STUDENT */}
+          {/* VIEW ATTENDANCE */}
           <div
-            onClick={handleAddUser}
+            onClick={() => navigate("/view-attendance")}
             style={{
               background: 'linear-gradient(145deg, #ff5722, #bf360c)',
               borderRadius: '32px',
@@ -215,12 +215,13 @@ const AttendanceUpload = () => {
               boxShadow: '0 25px 50px rgba(255,87,34,0.5)'
             }}
           >
-            <div style={{ fontSize: '60px' }}>➕</div>
+            <div style={{ fontSize: '60px' }}>📊</div>
             <h3 style={{ fontSize: '30px', fontWeight: '800' }}>
-              Add Student
+              View Attendance
             </h3>
-            <p>Register new faces</p>
+            <p>Check and update student attendance</p>
           </div>
+          
         </div>
 
         {/* MESSAGE */}

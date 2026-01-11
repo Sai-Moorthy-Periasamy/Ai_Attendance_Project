@@ -85,12 +85,15 @@ const AttendanceData = () => {
       {
         headerName: "Status",
         field: "status",
-        editable: true,
         flex: 1,
+        cellEditor: "agSelectCellEditor",
+        cellEditorParams: { values: ["Present", "Absent", "Onduty"] },
         cellRenderer: (params) => (
           <span
             style={{
-              color: params.value === "Present" ? "green" : "red",
+              color: params.value === "Present" ? "green" :
+                     params.value === "Absent" ? "red" :
+                     params.value === "Onduty" ? "orange" : "black",
               fontWeight: "bold",
             }}
           >
