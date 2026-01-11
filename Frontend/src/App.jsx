@@ -9,8 +9,8 @@ import AttendanceForm from "./Pages/AttendanceForm";
 import AttendanceUpload from "./Pages/AttendanceUpload";
 import AttendanceData from "./Pages/AttendanceData";
 import ViewAttendance from "./Pages/ViewAttendance";
-import MarkUpload from "./Pages/MarkUpload";
-import MarkForm from "./Pages/MarkForm";
+import MarkAutomationPage from "./Pages/MarkAutomationPage";
+import MarkFormPage from "./Pages/MarkFormPage";
 import AdduserPage from "./Pages/AdduserPage";
 import UpdateuserPage from "./Pages/UpdateuserPage";
 import LoginPage from "./Pages/LoginPage";
@@ -29,8 +29,8 @@ function App() {
           <Route path="/attendance-data" element={<AttendanceData />} />
           <Route path="/view-attendance" element={<ViewAttendance />} />
           <Route path="/student-view-attendance" element={<StudentViewAttendance />} />
-          <Route path="/mark-upload" element={<MarkUpload />} />
-          <Route path="/mark-form" element={<MarkForm />} />
+          <Route path="/marks-upload" element={<MarkAutomationPage />} />
+          <Route path="/mark-form" element={<MarkFormPage />} />
           <Route path="/mark-sheet" element={<MarkSheet />} />
 
           <Route path="/adduser" element={<AdduserPage/>} />

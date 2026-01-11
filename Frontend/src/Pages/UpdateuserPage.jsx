@@ -60,7 +60,6 @@ const UpdateuserPage = () => {
   };
 
   const columns = [
-    { headerName: "ID", field: "id", editable: false, width: 80 },
     { headerName: "Name", field: "name", editable: true },
     { headerName: "RollNo", field: "rollno", editable: true },
     {
@@ -130,7 +129,7 @@ const UpdateuserPage = () => {
         rowData={rowData}
         columnDefs={columns}
         pagination={true}
-        paginationPageSize={10}
+        paginationPageSize={20}
         defaultColDef={{
           flex: 1,
           minWidth: 120,

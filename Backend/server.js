@@ -286,5 +286,117 @@ app.get("/student-attendance-full", (req, res) => {
     }
   );
 });
+/* ================= MARK AUTOMATION ENDPOINTS ================= */
+app.post('/api/students/get-by-class', (req, res) => {
+  console.log('📥 GET STUDENTS:', req.body); // DEBUG
+  
+  const { year, department, section } = req.body;
+  
+  if (!year || !department || !section) {
+    return res.status(400).json({ error: 'Missing year, department, or section' });
+  }
+  
+  const sql = `
+    SELECT rollno, name, year, dept, section
+    FROM users 
+    WHERE year = ? AND dept = ? AND section = ? AND profession = 'student'
+    ORDER BY rollno ASC
+  `;
+  
+  db.query(sql, [year, department, section], (err, results) => {
+    if (err) {
+      console.error('❌ DB Error:', err);
+      return res.status(500).json({ error: 'Database error: ' + err.message });
+    }
+    
+    console.log(`✅ Found ${results.length} students`); // DEBUG
+    
+    const students = results.map(s => ({
+      rollNo: s.rollno,
+      name: s.name,
+      marks: 0
+    }));
+    
+    res.json(students); // ✅ ALWAYS SEND JSON
+  });
+});
+
+app.post('/api/marks/get-by-class', (req, res) => {
+  console.log('📥 GET MARKS:', req.body); // DEBUG
+
+  const { year, department, section, courseId, category } = req.body;
+
+  if (!year || !department || !section || !courseId || !category) {
+    return res.status(400).json({ error: 'Missing required fields: year, department, section, courseId, category' });
+  }
+
+  const sql = `
+    SELECT rollno, marks
+    FROM marks
+    WHERE year = ? AND dept = ? AND section = ? AND course_id = ? AND category = ?
+    ORDER BY rollno ASC
+  `;
+
+  db.query(sql, [year, department, section, courseId, category], (err, results) => {
+    if (err) {
+      console.error('❌ Get Marks Error:', err);
+      return res.status(500).json({ error: 'Database error: ' + err.message });
+    }
+
+    console.log(`✅ Found ${results.length} existing marks`);
+    res.json(results);
+  });
+});
+
+app.post('/api/marks/submit', (req, res) => {
+  console.log('📥 SUBMIT MARKS:', req.body.classDetails); // DEBUG
+
+  const { classDetails, marksData, teacher } = req.body;
+
+  if (!classDetails || !marksData) {
+    return res.status(400).json({ error: 'Missing classDetails or marksData' });
+  }
+
+  const { year, department: dept, section, courseId: course_id, courseName: course_name, category } = classDetails;
+
+  const values = marksData.map(m => [
+    m.rollNo, m.name, year, dept, section, course_id, course_name, category,
+    parseInt(m.marks) || 0, 100,
+    (parseInt(m.marks) || 0) >= 51 ? 'Pass' : 'Fail',
+    teacher.rollno || 'unknown', teacher.name || 'Staff'
+  ]);
+
+  const sql = `
+    INSERT INTO marks (rollno, name, year, dept, section, course_id, course_name, category, marks, total_marks, status, teacher_rollno, teacher_name)
+    VALUES ?
+    ON DUPLICATE KEY UPDATE
+      marks = VALUES(marks),
+      status = VALUES(status),
+      teacher_rollno = VALUES(teacher_rollno),
+      teacher_name = VALUES(teacher_name)
+  `;
+
+  db.query(sql, [values], (err, result) => {
+    if (err) {
+      console.error('❌ Marks Error:', err);
+      return res.status(500).json({ error: 'Save failed: ' + err.message });
+    }
+
+    // Simple report (no complex query)
+    const report = {
+      totalStudents: marksData.length,
+      passed: marksData.filter(m => parseInt(m.marks) >= 51).length,
+      failed: marksData.filter(m => parseInt(m.marks) < 51).length,
+      passPercentage: marksData.length > 0 ? ((marksData.filter(m => parseInt(m.marks) >= 51).length / marksData.length) * 100).toFixed(1) : 0,
+      average: (marksData.reduce((sum, m) => sum + parseInt(m.marks), 0) / marksData.length || 0).toFixed(1),
+      highestMark: Math.max(...marksData.map(m => parseInt(m.marks))),
+      topperName: marksData.find(m => parseInt(m.marks) === Math.max(...marksData.map(m2 => parseInt(m2.marks))))?.name || 'N/A'
+    };
+
+    console.log('✅ Marks saved + Report:', report);
+    res.json({ success: true, report });
+  });
+});
+/* ================= START SERVER ================= */  
 
 app.listen(5000, () => console.log("Server running on http://localhost:5000 🚀"));
