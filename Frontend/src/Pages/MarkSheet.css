@@ -1,0 +1,15 @@
+.mark-table th {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  font-weight: 600;
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%) !important;
+}
+
+.card {
+  border: none;
+  border-radius: 15px;
+}
+ 

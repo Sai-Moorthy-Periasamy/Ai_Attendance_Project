@@ -321,6 +321,37 @@ app.post('/api/students/get-by-class', (req, res) => {
   });
 });
 
+app.get('/api/student/marks', (req, res) => {
+  const { rollno } = req.query;
+
+  if (!rollno) {
+    return res.status(400).json({ error: 'Roll number required' });
+  }
+
+  const sql = `
+    SELECT 
+      course_id,
+      course_name,
+      category,
+      marks,
+      total_marks,
+      status,
+      updated_at
+    FROM marks
+    WHERE rollno = ?
+    ORDER BY updated_at DESC
+  `;
+
+  db.query(sql, [rollno], (err, results) => {
+    if (err) {
+      console.error('❌ Student Marks Error:', err);
+      return res.status(500).json({ error: err.message });
+    }
+
+    res.json(results);
+  });
+});
+
 app.post('/api/marks/get-by-class', (req, res) => {
   console.log('📥 GET MARKS:', req.body); // DEBUG
 
@@ -397,6 +428,59 @@ app.post('/api/marks/submit', (req, res) => {
     res.json({ success: true, report });
   });
 });
+
+/* ================= STUDENT MARKS VIEWING ================= */
+app.get('/api/student-marks', (req, res) => {
+  const { rollno } = req.query;
+
+  if (!rollno) {
+    return res.status(400).json({ error: 'Roll number required' });
+  }
+
+  // Get ALL marks for this student across all courses/categories
+  const sql = `
+    SELECT 
+      course_id,
+      course_name,
+      category,
+      marks,
+      total_marks,
+      status,
+      teacher_name,
+      DATE_FORMAT(created_at, '%Y-%m-%d %H:%i') as date_added,
+      DATE_FORMAT(updated_at, '%Y-%m-%d %H:%i') as last_updated
+    FROM marks 
+    WHERE rollno = ? 
+    ORDER BY category DESC, course_name ASC, created_at DESC
+  `;
+
+  db.query(sql, [rollno], (err, results) => {
+    if (err) {
+      console.error('❌ Student Marks Error:', err);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    // Group by course for better display
+    const marksByCourse = results.reduce((acc, mark) => {
+      const key = `${mark.course_name} (${mark.course_id})`;
+      if (!acc[key]) {
+        acc[key] = [];
+      }
+      acc[key].push(mark);
+      return acc;
+    }, {});
+
+    console.log(`✅ Student ${rollno} marks fetched:`, Object.keys(marksByCourse).length, 'courses');
+    res.json({
+      rollno,
+      totalCourses: results.length,
+      marksByCourse,
+      marksList: results // Raw list for table display
+    });
+  });
+});
+
+
 /* ================= START SERVER ================= */  
 
 app.listen(5000, () => console.log("Server running on http://localhost:5000 🚀"));
