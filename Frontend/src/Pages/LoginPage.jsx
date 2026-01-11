@@ -16,6 +16,11 @@ const LoginPage = () => {
       const res = await axios.post("http://localhost:5000/login", form);
       alert(res.data.message);
       localStorage.setItem('user', JSON.stringify(res.data.user));
+      // Store staffname and staffrollno as login rollno and name from users table
+      localStorage.setItem('rollno', res.data.user.rollno);
+      localStorage.setItem('name', res.data.user.name);
+      // Show alert with rollno and staff name
+      alert(`Logged in as: Roll No - ${res.data.user.rollno}, Name - ${res.data.user.name}`);
       const from = location.state?.from || '/';
       navigate(from);
     } catch (err) {

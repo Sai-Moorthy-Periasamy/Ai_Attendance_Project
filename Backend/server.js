@@ -138,7 +138,7 @@ app.get("/students", (req, res) => {
   const { year, dept, section } = req.query;
 
   const sql = `
-    SELECT rollno, name 
+    SELECT rollno, name
     FROM users
     WHERE year = ? AND dept = ? AND section = ? AND profession = 'student'
   `;
@@ -156,7 +156,45 @@ app.get("/students", (req, res) => {
   });
 });
 
-/* ================= SERVER ================= */
-app.listen(5000, () => {
-  console.log("Server running on http://localhost:5000 🚀");
+/* ================= GET ATTENDANCE FOR CLASS ================= */
+app.get("/attendance-data", (req, res) => {
+  const { year, dept, section, period, date } = req.query;
+
+  const sql = `
+    SELECT rollno, name, status
+    FROM attendance
+    WHERE year = ? AND dept = ? AND section = ? AND period = ? AND date = ?
+  `;
+
+  db.query(sql, [year, dept, section, period, date], (err, results) => {
+    if (err) return res.status(500).json({ error: err.message });
+
+    res.json(results);
+  });
 });
+
+// SAVE ATTENDANCE
+app.post("/attendance", (req, res) => {
+  const { records } = req.body;
+  if (!records || !records.length) return res.status(400).json({ error: "No records provided" });
+
+  const sql = `
+    INSERT INTO attendance
+    (rollno, name, year, dept, section, period, status, staff_rollno, staff_name, date)
+    VALUES ?
+  `;
+
+  const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+  const values = records.map(r => [
+    r.rollno, r.name, r.year, r.dept, r.section,
+    r.period, r.status, r.staff_rollno, r.staff_name, currentDate
+  ]);
+
+  db.query(sql, [values], (err, result) => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ message: "Attendance saved successfully ✅", inserted: result.affectedRows });
+  });
+});
+
+app.listen(5000, () => console.log("Server running on http://localhost:5000 🚀"));
+

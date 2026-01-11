@@ -1,3 +1,6 @@
 - [x] Update login SQL query in Backend/server.js to remove profession check
 - [ ] Test login for students, teachers, and admins
 - [ ] Verify user object includes profession after login
+- [x] Fix "Staff info not found! Please login again." error when submitting attendance by storing staffname and staffrollno as login rollno and name from users table
+- [x] Fix "Error saving attendance: Field 'date' doesn't have a default value" by adding current date to attendance INSERT query
+- [x] Update AttendanceData.jsx to retrieve attendance status from the attendance table instead of always setting to "Absent"

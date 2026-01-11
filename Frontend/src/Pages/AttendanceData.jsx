@@ -1,9 +1,8 @@
-// AttendanceData.jsx
 import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useLocation } from "react-router-dom";
 import { AgGridReact } from "ag-grid-react";
 import { ModuleRegistry, AllCommunityModule } from "ag-grid-community";
-import { CloudUpload, X, CheckLg } from "react-bootstrap-icons";
+import { CloudUpload, X } from "react-bootstrap-icons";
 ModuleRegistry.registerModules([AllCommunityModule]);
 
 const AttendanceData = () => {
@@ -13,7 +12,6 @@ const AttendanceData = () => {
   const finalDept = department || localStorage.getItem("department");
   const finalSection = section || localStorage.getItem("section");
   const finalPeriod = period || localStorage.getItem("period");
-
 
   const [rowData, setRowData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -36,22 +34,49 @@ const AttendanceData = () => {
 
   useEffect(() => {
     setLoading(true);
-    fetch(
-       `http://localhost:5000/students?year=${finalYear}&dept=${finalDept}&section=${finalSection}`
-    )
+    const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
 
+    // Always fetch all students first
+    fetch(
+      `http://localhost:5000/students?year=${finalYear}&dept=${finalDept}&section=${finalSection}`
+    )
       .then((res) => res.json())
-      .then((data) => {
-        const formatted = data.map((s) => ({
+      .then((studentsData) => {
+        const students = studentsData.map((s) => ({
           rollno: s.rollno,
           name: s.name,
           status: "Absent",
         }));
-        setRowData(formatted);
+
+        // Then fetch attendance data for today to update statuses
+        fetch(
+          `http://localhost:5000/attendance-data?year=${finalYear}&dept=${finalDept}&section=${finalSection}&period=${finalPeriod}&date=${currentDate}`
+        )
+          .then((res) => res.json())
+          .then((attendanceData) => {
+            // Update student statuses based on attendance data
+            const updatedStudents = students.map((student) => {
+              const attendanceRecord = attendanceData.find(
+                (record) => record.rollno === student.rollno
+              );
+              return attendanceRecord
+                ? { ...student, status: attendanceRecord.status }
+                : student;
+            });
+            setRowData(updatedStudents);
+          })
+          .catch((err) => {
+            console.error("Error fetching attendance data:", err);
+            // If attendance fetch fails, just use students with Absent status
+            setRowData(students);
+          });
       })
-      .catch((err) => console.error(err))
+      .catch((err) => {
+        console.error("Error fetching students:", err);
+        setRowData([]);
+      })
       .finally(() => setLoading(false));
-  }, [year, department, section]);
+  }, [year, department, section, finalYear, finalDept, finalSection, finalPeriod]);
 
   const columnDefs = useMemo(
     () => [
@@ -104,7 +129,6 @@ const AttendanceData = () => {
     setImageURL(url);
     setFaces([]);
 
-    // Send to backend for face detection
     const formData = new FormData();
     formData.append("image", file);
 
@@ -119,7 +143,6 @@ const AttendanceData = () => {
       setUploadProgress(100);
       
       if (res.ok && data.faces) {
-        // Initialize faces with pink boxes
         const detectedFaces = data.faces.map((f) => ({ ...f, color: "pink", selected: false }));
         setFaces(detectedFaces);
         setSubmitEnabled(false);
@@ -140,7 +163,6 @@ const AttendanceData = () => {
     }
   };
 
-  // Handle teacher clicking face rectangle (PINK → GREEN)
   const handleFaceClick = (index) => {
     setFaces((prev) =>
       prev.map((f, i) => 
@@ -150,23 +172,67 @@ const AttendanceData = () => {
       )
     );
     
-    // Enable submit if at least one face selected
     setSubmitEnabled(true);
   };
 
-  const handleSubmitAttendance = () => {
-    // Update table with selected faces only
-    const selectedFaces = faces.filter(f => f.color === "green");
-    
-    const updatedRowData = rowData.map((student) => {
-      const selected = selectedFaces.find(f => f.rollno === student.rollno);
-      return selected ? { ...student, status: "Present" } : student;
+const handleSubmitAttendance = async () => {
+  // Get staff info from localStorage
+  const staffRoll = localStorage.getItem("rollno");
+  const staffName = localStorage.getItem("name");
+
+  if (!staffRoll || !staffName) {
+    alert("Staff info not found! Please login again.");
+    return;
+  }
+
+  // Filter selected faces (marked green)
+  const selectedFaces = faces.filter(f => f.color === "green");
+
+  if (selectedFaces.length === 0) {
+    alert("No students selected! Please click on student boxes to mark Present.");
+    return;
+  }
+
+  // Update table locally
+  const updatedRowData = rowData.map(student => {
+    const selected = selectedFaces.find(f => f.rollno === student.rollno);
+    return selected ? { ...student, status: "Present" } : student;
+  });
+  setRowData(updatedRowData);
+
+  // Prepare payload for backend
+  const payload = selectedFaces.map(f => ({
+    rollno: f.rollno,
+    name: f.name,
+    year: finalYear,
+    dept: finalDept,
+    section: finalSection,
+    period: finalPeriod,
+    status: "Present",
+    staff_rollno: staffRoll,
+    staff_name: staffName,
+  }));
+
+  try {
+    const res = await fetch("http://localhost:5000/attendance", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ records: payload }),
     });
-    
-    setRowData(updatedRowData);
-    alert(`✅ Marked ${selectedFaces.length} students as Present!`);
-    closeModal();
-  };
+
+    const data = await res.json();
+
+    if (res.ok) {
+      alert(`✅ Attendance saved for ${selectedFaces.length} students!`);
+      closeModal();
+    } else {
+      alert("Error saving attendance: " + data.error);
+    }
+  } catch (err) {
+    console.error(err);
+    alert("Server error while saving attendance");
+  }
+};
 
   const openModal = () => {
     setShowModal(true);
@@ -210,7 +276,6 @@ const AttendanceData = () => {
   return (
     <>
       <div className="container mt-4">
-        {/* Header & Grid - SAME AS BEFORE */}
         <div className="card shadow-sm mb-3">
           <div className="card-body text-center">
             <h4 className="mb-1">AI Attendance</h4>
@@ -220,7 +285,6 @@ const AttendanceData = () => {
               <strong>Section:</strong> {finalSection} |{" "}
               <strong>Period:</strong> {finalPeriod}
             </p>
-
           </div>
         </div>
 
@@ -251,9 +315,8 @@ const AttendanceData = () => {
           </button>
         </div>
       </div>
-      <br /><br />
-
-      {/* FACE DETECTION MODAL */}
+<br />
+      {/* MODAL */}
       {showModal && (
         <div 
           style={{
@@ -272,7 +335,6 @@ const AttendanceData = () => {
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            {/* MODAL HEADER */}
             <div style={{
               padding: '24px 32px 16px',
               background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
@@ -287,7 +349,6 @@ const AttendanceData = () => {
               }}>
                 <X size={24} />
               </button>
-              
               <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                 <div style={{
                   width: '56px', height: '56px', background: 'rgba(255,255,255,0.2)',
@@ -304,10 +365,7 @@ const AttendanceData = () => {
               </div>
             </div>
 
-            {/* MODAL BODY */}
             <div style={{ padding: '32px', maxHeight: '500px', overflowY: 'auto' }}>
-              
-              {/* UPLOAD AREA - Only show if no image */}
               {!imageURL && (
                 <div style={{
                   border: dragActive ? '3px dashed #667eea' : '2px dashed #dee2e6',
@@ -335,7 +393,6 @@ const AttendanceData = () => {
                 </div>
               )}
 
-              {/* FACE DETECTION IMAGE */}
               {imageURL && (
                 <div style={{ position: 'relative', display: 'inline-block', marginBottom: '24px' }}>
                   <img 
@@ -343,18 +400,13 @@ const AttendanceData = () => {
                     src={imageURL} 
                     alt="Classroom" 
                     style={{ 
-                      maxWidth: '100%', 
-                      maxHeight: '400px', 
-                      borderRadius: '12px',
+                      maxWidth: '100%', maxHeight: '400px', borderRadius: '12px',
                       boxShadow: '0 8px 24px rgba(0,0,0,0.15)'
                     }}
                   />
-                  
-                  {/* FACE BOXES - PINK/GREEN */}
                   {faces.map((face, idx) => {
                     const { top, right, bottom, left } = face.box;
                     const scale = getImageScale();
-                    
                     return (
                       <div
                         key={idx}
@@ -370,11 +422,9 @@ const AttendanceData = () => {
                           cursor: 'pointer',
                           borderRadius: '8px',
                           boxSizing: 'border-box',
-                          transition: 'all 0.2s ease',
                           display: 'flex',
                           alignItems: 'flex-end',
                           padding: '4px',
-                          boxShadow: `0 4px 12px ${face.color === 'green' ? 'rgba(40, 167, 69, 0.4)' : 'rgba(255, 105, 180, 0.4)'}`,
                         }}
                         title={`Click to ${face.color === 'green' ? 'unselect' : 'mark Present'}: ${face.name} (${face.rollno})`}
                       >
@@ -398,12 +448,9 @@ const AttendanceData = () => {
                 </div>
               )}
 
-              {/* PROGRESS BAR */}
               {uploadProgress > 0 && (
                 <div style={{ marginTop: '16px' }}>
-                  <div style={{
-                    height: '8px', background: '#e9ecef', borderRadius: '4px', overflow: 'hidden'
-                  }}>
+                  <div style={{ height: '8px', background: '#e9ecef', borderRadius: '4px', overflow: 'hidden' }}>
                     <div style={{
                       height: '100%', background: '#28a745', borderRadius: '4px',
                       width: `${uploadProgress}%`, transition: 'width 0.3s ease'
@@ -412,7 +459,6 @@ const AttendanceData = () => {
                 </div>
               )}
 
-              {/* SUMMARY */}
               {faces.length > 0 && (
                 <div style={{ marginTop: '20px', padding: '16px', background: '#f8f9fa', borderRadius: '12px' }}>
                   <h6 style={{ margin: '0 0 12px 0', color: '#495057' }}>
@@ -422,7 +468,6 @@ const AttendanceData = () => {
               )}
             </div>
 
-            {/* FOOTER */}
             <div style={{
               padding: '24px 32px', borderTop: '1px solid #e9ecef',
               display: 'flex', gap: '12px', justifyContent: 'flex-end'
