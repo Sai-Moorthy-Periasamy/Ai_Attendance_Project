@@ -173,22 +173,32 @@ app.get("/attendance-data", (req, res) => {
   });
 });
 
-// SAVE ATTENDANCE
+// SAVE ATTENDANCE with upsert (duplicate handled)
 app.post("/attendance", (req, res) => {
   const { records } = req.body;
   if (!records || !records.length) return res.status(400).json({ error: "No records provided" });
+
+  const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
+
+  // Prepare values for bulk insert
+  const values = records.map(r => [
+    r.rollno, r.name, r.year, r.dept, r.section,
+    r.period, r.status, r.staff_rollno, r.staff_name, currentDate
+  ]);
 
   const sql = `
     INSERT INTO attendance
     (rollno, name, year, dept, section, period, status, staff_rollno, staff_name, date)
     VALUES ?
+    ON DUPLICATE KEY UPDATE
+      name = VALUES(name),
+      year = VALUES(year),
+      dept = VALUES(dept),
+      section = VALUES(section),
+      status = VALUES(status),
+      staff_rollno = VALUES(staff_rollno),
+      staff_name = VALUES(staff_name)
   `;
-
-  const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
-  const values = records.map(r => [
-    r.rollno, r.name, r.year, r.dept, r.section,
-    r.period, r.status, r.staff_rollno, r.staff_name, currentDate
-  ]);
 
   db.query(sql, [values], (err, result) => {
     if (err) return res.status(500).json({ error: err.message });
