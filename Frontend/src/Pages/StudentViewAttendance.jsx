@@ -11,39 +11,56 @@ const StudentViewAttendance = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const rollno = user?.rollno;
   const name = user?.name;
-  const year = user?.year;
-  const dept = user?.dept;
-  const section = user?.section;
 
   const fetchAttendance = async () => {
-    if (!date) {
-      setMessage("Please select a date.");
-      return;
-    }
+  if (!date) {
+    setMessage("Please select a date.");
+    return;
+  }
 
-    setLoading(true);
-    setMessage("");
-    try {
-      const res = await fetch(`http://localhost:5000/attendance-data-student?rollno=${rollno}&date=${date}`);
-      const data = await res.json();
+  setLoading(true);
+  setMessage("");
+  try {
+    // NEW ENDPOINT with class context
+    const res = await fetch(`http://localhost:5000/student-attendance-full?rollno=${rollno}&date=${date}`);
+    const rawData = await res.json();
+    console.log("Class-aware API data:", rawData);
 
-      // Prepare 8 periods
-      const periods = Array.from({ length: 8 }, (_, i) => {
-        const record = data.find(d => Number(d.period) === i + 1);
+    const periods = Array.from({ length: 8 }, (_, i) => {
+      const periodNum = (i + 1).toString();
+      const record = rawData.find(d => d.period === periodNum);
+      
+      if (record) {
+        // Period was taken - show actual status or Absent
         return {
           period: `Period ${i + 1}`,
-          status: record ? record.status : "Not Taken",
+          status: record.status  // Present/Absent/Onduty
         };
-      });
+      } else {
+        // Period not taken by class
+        return {
+          period: `Period ${i + 1}`,
+          status: "Not Taken"
+        };
+      }
+    });
 
-      setAttendance(periods);
-      setMessage(`Attendance for ${date} loaded successfully ✅`);
-    } catch (err) {
-      setMessage("Error fetching attendance: " + err.message);
-    } finally {
-      setLoading(false);
-    }
-  };
+    console.log("Final display data:", periods);
+    setAttendance(periods);
+    setMessage(`Attendance loaded for ${date} ✅ (${rawData.length} periods taken by class)`);
+  } catch (err) {
+    console.error("Fetch error:", err);
+    setMessage("Error: " + err.message);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+  // Auto-fetch on mount for today
+  useEffect(() => {
+    fetchAttendance();
+  }, []);
 
   return (
     <Container className="py-5">
@@ -58,13 +75,13 @@ const StudentViewAttendance = () => {
         </Col>
         <Col md={2} className="d-flex align-items-end">
           <Button onClick={fetchAttendance} disabled={loading}>
-            {loading ? <Spinner animation="border" size="sm" /> : "View Attendance"}
+            {loading ? <Spinner animation="border" size="sm" /> : "🔄 Refresh"}
           </Button>
         </Col>
       </Row>
 
       {message && (
-        <Alert variant={message.includes("successfully") ? "success" : "info"}>
+        <Alert variant={message.includes("successfully") ? "success" : "danger"}>
           {message}
         </Alert>
       )}
@@ -72,37 +89,30 @@ const StudentViewAttendance = () => {
       {attendance.length > 0 && (
         <Card className="p-4 shadow">
           <h4>{name} - Attendance on {date}</h4>
-          <div className="d-flex mt-3 justify-content-between">
-            {attendance.map((item) => (
+          <div className="d-flex mt-3 justify-content-between flex-wrap gap-2">
+            {attendance.map((item, index) => (
               <div
-                key={item.period}
+                key={`${item.period}-${index}`} // Fixed key
                 style={{
-                  flex: 1,
-                  margin: "0 4px",
+                  flex: "1 1 100px",
+                  margin: "4px",
                   padding: "16px",
                   borderRadius: "12px",
                   textAlign: "center",
                   backgroundColor:
-                    item.status === "Present"
-                      ? "#d4edda"
-                      : item.status === "Absent"
-                      ? "#f8d7da"
-                      : item.status === "Onduty"
-                      ? "#fff3cd"
-                      : "#e2e3e5",
+                    item.status === "Present" ? "#d4edda" :
+                    item.status === "Absent" ? "#f8d7da" :
+                    item.status === "Onduty" ? "#fff3cd" : "#e2e3e5",
                   color:
-                    item.status === "Present"
-                      ? "#155724"
-                      : item.status === "Absent"
-                      ? "#721c24"
-                      : item.status === "Onduty"
-                      ? "#856404"
-                      : "#6c757d",
+                    item.status === "Present" ? "#155724" :
+                    item.status === "Absent" ? "#721c24" :
+                    item.status === "Onduty" ? "#856404" : "#6c757d",
                   fontWeight: "600",
+                  minWidth: "100px",
                 }}
               >
-                <div>{item.period}</div>
-                <div style={{ marginTop: "8px", fontSize: "18px" }}>
+                <div style={{ fontSize: "14px" }}>{item.period}</div>
+                <div style={{ marginTop: "8px", fontSize: "18px", fontWeight: "bold" }}>
                   {item.status}
                 </div>
               </div>

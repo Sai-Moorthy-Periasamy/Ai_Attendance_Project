@@ -41,7 +41,7 @@ app.post("/adduser", async (req, res) => {
       [rollno, email, hashedPassword, profession, name, year, dept, section],
       (err) => {
         if (err) {
-          if (err.code === "ER_DUP_ENTRY") {
+         if (err.code === "ER_DUP_ENTRY") {
             return res.status(409).json({ error: "User already exists" });
           }
           return res.status(500).json({ error: err.message });
@@ -124,6 +124,7 @@ app.post("/login", (req, res) => {
     if (!match)
       return res.status(401).json({ error: "Invalid credentials ❌" });
 
+    // SECURITY FIX: Remove password BEFORE sending response
     delete user.password;
 
     res.json({
@@ -206,7 +207,7 @@ app.post("/attendance", (req, res) => {
   });
 });
 
-// GET STUDENT ATTENDANCE FOR DATE
+// GET STUDENT ATTENDANCE FOR DATE (OLD ENDPOINT - Keep for compatibility)
 app.get("/attendance-data-student", (req, res) => {
   const { rollno, date } = req.query;
 
@@ -223,6 +224,67 @@ app.get("/attendance-data-student", (req, res) => {
   });
 });
 
+/* ================= NEW ENDPOINT: STUDENT ATTENDANCE WITH CLASS CONTEXT ================= */
+app.get("/student-attendance-full", (req, res) => {
+  const { rollno, date } = req.query;
+  
+  // Step 1: Get student class details
+  db.query(
+    "SELECT year, dept, section FROM users WHERE rollno = ? AND profession = 'student'",
+    [rollno],
+    (err, studentResults) => {
+      if (err) return res.status(500).json({ error: err.message });
+      if (studentResults.length === 0) {
+        return res.status(404).json({ error: "Student not found" });
+      }
+      
+      const { year, dept, section } = studentResults[0];
+      
+      // Step 2: Find ALL periods taken for this class on this date
+      db.query(
+        `SELECT DISTINCT period FROM attendance 
+         WHERE year = ? AND dept = ? AND section = ? AND date = ?
+         ORDER BY CAST(period AS UNSIGNED)`,
+        [year, dept, section, date],
+        (err, classPeriods) => {
+          if (err) return res.status(500).json({ error: err.message });
+          
+          // If no periods taken that day, return all "Not Taken"
+          if (classPeriods.length === 0) {
+            const periods = Array.from({ length: 8 }, (_, i) => ({
+              period: (i + 1).toString(),
+              status: "Not Taken"
+            }));
+            return res.json(periods);
+          }
+          
+          const periods = classPeriods.map(p => p.period);
+          
+          // Step 3: Get student's records for those periods
+          db.query(
+            `SELECT period, status FROM attendance 
+             WHERE rollno = ? AND date = ? AND period IN (${periods.map(() => '?').join(',')})
+             ORDER BY CAST(period AS UNSIGNED)`,
+            [rollno, date, ...periods],
+            (err, studentRecords) => {
+              if (err) return res.status(500).json({ error: err.message });
+              
+              // Step 4: Complete view - registered periods get status, others Absent
+              const result = periods.map(period => {
+                const studentRecord = studentRecords.find(r => r.period === period);
+                return {
+                  period: period,
+                  status: studentRecord ? studentRecord.status : "Absent"
+                };
+              });
+              
+              res.json(result);
+            }
+          );
+        }
+      );
+    }
+  );
+});
 
 app.listen(5000, () => console.log("Server running on http://localhost:5000 🚀"));
-
