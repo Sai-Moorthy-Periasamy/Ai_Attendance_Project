@@ -8,7 +8,12 @@ ModuleRegistry.registerModules([AllCommunityModule]);
 
 const AttendanceData = () => {
   const location = useLocation();
-  const { year, department, section } = location.state || {};
+  const { year, department, section, period } = location.state || {};
+  const finalYear = year || localStorage.getItem("year");
+  const finalDept = department || localStorage.getItem("department");
+  const finalSection = section || localStorage.getItem("section");
+  const finalPeriod = period || localStorage.getItem("period");
+
 
   const [rowData, setRowData] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -21,7 +26,7 @@ const AttendanceData = () => {
   const [submitEnabled, setSubmitEnabled] = useState(false);
   const imgRef = useRef(null);
 
-  if (!year || !department || !section) {
+  if (!finalYear || !finalDept || !finalSection || !finalPeriod) {
     return (
       <div className="container mt-5 text-center">
         <h4>Please select Year, Department and Section first.</h4>
@@ -32,8 +37,9 @@ const AttendanceData = () => {
   useEffect(() => {
     setLoading(true);
     fetch(
-      `http://localhost:5000/students?year=${year}&dept=${department}&section=${section}`
+       `http://localhost:5000/students?year=${finalYear}&dept=${finalDept}&section=${finalSection}`
     )
+
       .then((res) => res.json())
       .then((data) => {
         const formatted = data.map((s) => ({
@@ -209,9 +215,12 @@ const AttendanceData = () => {
           <div className="card-body text-center">
             <h4 className="mb-1">AI Attendance</h4>
             <p className="text-muted mb-0">
-              <strong>Year:</strong> {year} | <strong>Department:</strong> {department} |{" "}
-              <strong>Section:</strong> {section}
+              <strong>Year:</strong> {finalYear} |{" "}
+              <strong>Department:</strong> {finalDept} |{" "}
+              <strong>Section:</strong> {finalSection} |{" "}
+              <strong>Period:</strong> {finalPeriod}
             </p>
+
           </div>
         </div>
 

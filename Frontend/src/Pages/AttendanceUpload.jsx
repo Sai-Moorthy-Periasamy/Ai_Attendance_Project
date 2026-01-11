@@ -5,13 +5,22 @@ const AttendanceUpload = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const { year, department, section } = location.state || {};
+  const { year, department, section, period } = location.state || {};
+
   const [loading, setLoading] = React.useState(false);
   const [message, setMessage] = React.useState("");
   const [messageType, setMessageType] = React.useState("");
 
-  // Safety check - Professional error page
-  if (!year || !department || !section) {
+  // 🔥 STORE TO LOCAL STORAGE
+  React.useEffect(() => {
+    if (year && department && section && period) {
+      const classDetails = { year, department, section, period };
+      localStorage.setItem("classDetails", JSON.stringify(classDetails));
+    }
+  }, [year, department, section, period]);
+
+  // ❌ SAFETY CHECK
+  if (!year || !department || !section || !period) {
     return (
       <div style={{
         minHeight: '100vh',
@@ -40,16 +49,14 @@ const AttendanceUpload = () => {
             alignItems: 'center',
             justifyContent: 'center'
           }}>
-            <div style={{
-              fontSize: '36px'
-            }}>⚠️</div>
+            <div style={{ fontSize: '36px' }}>⚠️</div>
           </div>
-          <h2 style={{ fontSize: '28px', fontWeight: '700', margin: '0 0 16px', color: '#333' }}>
+          <h2 style={{ fontSize: '28px', fontWeight: '700', marginBottom: '16px' }}>
             Selection Required
           </h2>
-          <p style={{ fontSize: '16px', color: '#666', lineHeight: '1.6', margin: 0 }}>
-            Please select <strong>Year</strong>, <strong>Department</strong>, and <strong>Section</strong> 
-            to continue with attendance management.
+          <p style={{ color: '#666', lineHeight: '1.6' }}>
+            Please select <strong>Year</strong>, <strong>Department</strong>, 
+            <strong> Section</strong> and <strong>Period</strong>.
           </p>
         </div>
       </div>
@@ -57,7 +64,9 @@ const AttendanceUpload = () => {
   }
 
   const handleMarkAttendance = () => {
-    navigate("/attendance-data", { state: { year, department, section } });
+    navigate("/attendance-data", {
+      state: { year, department, section, period }
+    });
   };
 
   const handleTrainData = async () => {
@@ -85,315 +94,146 @@ const AttendanceUpload = () => {
   };
 
   const handleAddUser = () => {
-    alert("Add New User feature coming soon! 🚀");
+    alert("Add New Student – Coming Soon 🚀");
   };
 
   return (
     <div style={{
       minHeight: '100vh',
       background: 'linear-gradient(135deg, #ff6b9d 0%, #c44569 50%, #f093fb 100%)',
-      padding: '40px 20px',
-      fontFamily: '-apple-system, BlinkMacSystemFont, sans-serif'
+      padding: '40px 20px'
     }}>
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
 
-        {/* HERO HEADER */}
+        {/* HEADER */}
         <div style={{
-          background: 'rgba(255, 255, 255, 0.95)',
-          backdropFilter: 'blur(20px)',
+          background: 'white',
           borderRadius: '32px',
           padding: '48px',
           marginBottom: '48px',
-          boxShadow: '0 35px 80px rgba(0,0,0,0.2)',
-          border: '1px solid rgba(255,255,255,0.2)'
+          boxShadow: '0 35px 80px rgba(0,0,0,0.2)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '32px' }}>
-            <div>
-              <h1 style={{
-                fontSize: '48px',
-                fontWeight: '800',
-                background: 'linear-gradient(135deg, #ff6b9d, #c44569)',
-                WebkitBackgroundClip: 'text',
-                WebkitTextFillColor: 'transparent',
-                margin: '0 0 12px 0',
-                lineHeight: '1.1'
-              }}>
-                AI Attendance Dashboard
-              </h1>
-              <p style={{
-                fontSize: '20px',
-                color: '#666',
-                margin: 0,
-                fontWeight: '400'
-              }}>
-                Intelligent face recognition system for modern classrooms
-              </p>
-            </div>
-            
-          </div>
+          <h1 style={{
+            fontSize: '42px',
+            fontWeight: '800',
+            marginBottom: '12px',
+            background: 'linear-gradient(135deg, #ff6b9d, #c44569)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor: 'transparent'
+          }}>
+            AI Attendance Dashboard
+          </h1>
+          <p style={{ fontSize: '18px', color: '#666' }}>
+            Smart classroom attendance system
+          </p>
 
-          {/* CLASS DETAILS */}
+          {/* CLASS INFO */}
           <div style={{
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '24px',
             marginTop: '32px'
           }}>
-            <div style={{
-              background: 'rgba(102, 126, 234, 0.1)',
-              border: '2px solid rgba(102, 126, 234, 0.3)',
-              borderRadius: '20px',
-              padding: '28px',
-              textAlign: 'center',
-              transition: 'all 0.3s ease'
-            }}>
-              <div style={{ fontSize: '14px', color: '#667eea', fontWeight: '600', marginBottom: '8px' }}>
-                📚 YEAR
+            {[
+              { label: "YEAR", value: year, emoji: "📚", color: "#667eea" },
+              { label: "DEPARTMENT", value: department, emoji: "🏢", color: "#28a745" },
+              { label: "SECTION", value: section, emoji: "📋", color: "#ffc107" },
+              { label: "PERIOD", value: `Period ${period}`, emoji: "⏰", color: "#ff5722" }
+            ].map((item, idx) => (
+              <div key={idx} style={{
+                background: `${item.color}20`,
+                border: `2px solid ${item.color}60`,
+                borderRadius: '20px',
+                padding: '26px',
+                textAlign: 'center'
+              }}>
+                <div style={{ fontSize: '14px', fontWeight: '600', color: item.color }}>
+                  {item.emoji} {item.label}
+                </div>
+                <div style={{ fontSize: '28px', fontWeight: '800', marginTop: '8px' }}>
+                  {item.value}
+                </div>
               </div>
-              <div style={{ fontSize: '36px', fontWeight: '800', color: '#1a1a1a' }}>
-                {year}
-              </div>
-            </div>
-            <div style={{
-              background: 'rgba(40, 167, 69, 0.1)',
-              border: '2px solid rgba(40, 167, 69, 0.3)',
-              borderRadius: '20px',
-              padding: '28px',
-              textAlign: 'center',
-              transition: 'all 0.3s ease'
-            }}>
-              <div style={{ fontSize: '14px', color: '#28a745', fontWeight: '600', marginBottom: '8px' }}>
-                🏢 DEPARTMENT
-              </div>
-              <div style={{ fontSize: '28px', fontWeight: '700', color: '#1a1a1a' }}>
-                {department}
-              </div>
-            </div>
-            <div style={{
-              background: 'rgba(255, 193, 7, 0.1)',
-              border: '2px solid rgba(255, 193, 7, 0.3)',
-              borderRadius: '20px',
-              padding: '28px',
-              textAlign: 'center',
-              transition: 'all 0.3s ease'
-            }}>
-              <div style={{ fontSize: '14px', color: '#ffc107', fontWeight: '600', marginBottom: '8px' }}>
-                📋 SECTION
-              </div>
-              <div style={{ fontSize: '36px', fontWeight: '800', color: '#1a1a1a' }}>
-                {section}
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
         {/* ACTION CARDS */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '32px' }}>
-          
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+          gap: '32px'
+        }}>
           {/* MARK ATTENDANCE */}
-          <div 
+          <div
+            onClick={handleMarkAttendance}
             style={{
-              background: 'linear-gradient(145deg, #4CAF50 0%, #45a049 100%)',
+              background: 'linear-gradient(145deg, #4CAF50, #2e7d32)',
               borderRadius: '32px',
-              padding: '48px 32px',
+              padding: '48px',
               color: 'white',
               cursor: 'pointer',
-              position: 'relative',
-              overflow: 'hidden',
-              boxShadow: '0 25px 50px rgba(76, 175, 80, 0.4)',
-              transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-            }}
-            onClick={handleMarkAttendance}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-16px) scale(1.02)';
-              e.currentTarget.style.boxShadow = '0 40px 80px rgba(76, 175, 80, 0.6)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 25px 50px rgba(76, 175, 80, 0.4)';
+              boxShadow: '0 25px 50px rgba(76,175,80,0.5)'
             }}
           >
-            <div style={{
-              position: 'absolute',
-              top: '-20px',
-              right: '-20px',
-              width: '120px',
-              height: '120px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '50%',
-              backdropFilter: 'blur(20px)'
-            }} />
-            <div style={{
-              fontSize: '64px',
-              marginBottom: '24px',
-              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
-            }}>
-              📷
-            </div>
-            <h3 style={{
-              fontSize: '32px',
-              fontWeight: '800',
-              margin: '0 0 16px 0',
-              lineHeight: '1.2'
-            }}>
+            <div style={{ fontSize: '60px' }}>📷</div>
+            <h3 style={{ fontSize: '30px', fontWeight: '800' }}>
               Mark Attendance
             </h3>
-            <p style={{
-              fontSize: '18px',
-              margin: 0,
-              opacity: 0.95,
-              lineHeight: '1.5'
-            }}>
-              Capture classroom photo with AI face detection
-            </p>
+            <p>Capture image and auto-detect faces</p>
           </div>
 
-          {/* TRAIN AI */}
-          <div 
-            style={{
-              background: 'linear-gradient(145deg, #2196F3 0%, #1976D2 100%)',
-              borderRadius: '32px',
-              padding: '48px 32px',
-              color: 'white',
-              position: 'relative',
-              overflow: 'hidden',
-              boxShadow: '0 25px 50px rgba(33, 150, 243, 0.4)',
-              transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              opacity: loading ? 0.7 : 1
-            }}
+          {/* TRAIN */}
+          <div
             onClick={!loading ? handleTrainData : undefined}
-            onMouseEnter={(e) => {
-              if (!loading) {
-                e.currentTarget.style.transform = 'translateY(-16px) scale(1.02)';
-                e.currentTarget.style.boxShadow = '0 40px 80px rgba(33, 150, 243, 0.6)';
-              }
-            }}
-            onMouseLeave={(e) => {
-              if (!loading) {
-                e.currentTarget.style.transform = 'translateY(0) scale(1)';
-                e.currentTarget.style.boxShadow = '0 25px 50px rgba(33, 150, 243, 0.4)';
-              }
+            style={{
+              background: 'linear-gradient(145deg, #2196F3, #1565c0)',
+              borderRadius: '32px',
+              padding: '48px',
+              color: 'white',
+              cursor: loading ? 'not-allowed' : 'pointer',
+              opacity: loading ? 0.7 : 1,
+              boxShadow: '0 25px 50px rgba(33,150,243,0.5)'
             }}
           >
-            <div style={{
-              position: 'absolute',
-              top: '-20px',
-              right: '-20px',
-              width: '120px',
-              height: '120px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '50%',
-              backdropFilter: 'blur(20px)'
-            }} />
-            <div style={{
-              fontSize: '64px',
-              marginBottom: '24px',
-              filter: loading ? 'grayscale(1)' : 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
-            }}>
-              {loading ? '⏳' : '🤖'}
-            </div>
-            <h3 style={{
-              fontSize: '32px',
-              fontWeight: '800',
-              margin: '0 0 16px 0',
-              lineHeight: '1.2'
-            }}>
-              {loading ? 'Training AI...' : 'Train AI Model'}
+            <div style={{ fontSize: '60px' }}>{loading ? "⏳" : "🤖"}</div>
+            <h3 style={{ fontSize: '30px', fontWeight: '800' }}>
+              {loading ? "Training..." : "Train AI"}
             </h3>
-            <p style={{
-              fontSize: '18px',
-              margin: 0,
-              opacity: 0.95,
-              lineHeight: '1.5'
-            }}>
-              {loading ? 'Improving recognition accuracy...' : 'Optimize model with latest data'}
-            </p>
+            <p>Improve recognition accuracy</p>
           </div>
 
-          {/* ADD USER */}
-          <div 
+          {/* ADD STUDENT */}
+          <div
+            onClick={handleAddUser}
             style={{
-              background: 'linear-gradient(145deg, #FF5722 0%, #D84315 100%)',
+              background: 'linear-gradient(145deg, #ff5722, #bf360c)',
               borderRadius: '32px',
-              padding: '48px 32px',
+              padding: '48px',
               color: 'white',
               cursor: 'pointer',
-              position: 'relative',
-              overflow: 'hidden',
-              boxShadow: '0 25px 50px rgba(255, 87, 34, 0.4)',
-              transition: 'all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)'
-            }}
-            onClick={handleAddUser}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'translateY(-16px) scale(1.02)';
-              e.currentTarget.style.boxShadow = '0 40px 80px rgba(255, 87, 34, 0.6)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'translateY(0) scale(1)';
-              e.currentTarget.style.boxShadow = '0 25px 50px rgba(255, 87, 34, 0.4)';
+              boxShadow: '0 25px 50px rgba(255,87,34,0.5)'
             }}
           >
-            <div style={{
-              position: 'absolute',
-              top: '-20px',
-              right: '-20px',
-              width: '120px',
-              height: '120px',
-              background: 'rgba(255,255,255,0.2)',
-              borderRadius: '50%',
-              backdropFilter: 'blur(20px)'
-            }} />
-            <div style={{
-              fontSize: '64px',
-              marginBottom: '24px',
-              filter: 'drop-shadow(0 4px 8px rgba(0,0,0,0.3))'
-            }}>
-              ➕
-            </div>
-            <h3 style={{
-              fontSize: '32px',
-              fontWeight: '800',
-              margin: '0 0 16px 0',
-              lineHeight: '1.2'
-            }}>
-              Add New Student
+            <div style={{ fontSize: '60px' }}>➕</div>
+            <h3 style={{ fontSize: '30px', fontWeight: '800' }}>
+              Add Student
             </h3>
-            <p style={{
-              fontSize: '18px',
-              margin: 0,
-              opacity: 0.95,
-              lineHeight: '1.5'
-            }}>
-              Register new students for face recognition
-            </p>
+            <p>Register new faces</p>
           </div>
         </div>
 
         {/* MESSAGE */}
         {message && (
           <div style={{
-            marginTop: '48px',
-            padding: '32px 40px',
-            background: messageType === 'success' ? 
-              'linear-gradient(135deg, #d4edda, #c3e6cb)' : 
-              'linear-gradient(135deg, #f8d7da, #f5c6cb)',
+            marginTop: '40px',
+            padding: '28px',
             borderRadius: '24px',
-            borderLeft: messageType === 'success' ? '6px solid #28a745' : '6px solid #dc3545',
-            boxShadow: '0 20px 40px rgba(0,0,0,0.1)',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '20px'
+            background: messageType === "success" ? "#d4edda" : "#f8d7da",
+            borderLeft: `6px solid ${messageType === "success" ? "#28a745" : "#dc3545"}`,
+            fontSize: '18px'
           }}>
-            <div style={{
-              fontSize: messageType === 'success' ? '48px' : '44px',
-              filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.1))'
-            }}>
-              {messageType === 'success' ? '✅' : '❌'}
-            </div>
-            <div style={{ fontSize: '18px', lineHeight: '1.6' }}>
-              {message}
-            </div>
+            {messageType === "success" ? "✅" : "❌"} {message}
           </div>
         )}
       </div>
